@@ -73,6 +73,7 @@
 <div id="gameOver" class="menu" style="display:none;">
   <h2>💀 Game Over!</h2>
   <p id="finalScore"></p>
+  <p id="highScore"></p>
   <button onclick="startGame()">Jogar Novamente</button>
 </div>
 
@@ -81,7 +82,7 @@ const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
 const box = 20;
-let snake, direction, food, score, gameLoop, speed;
+let snake, direction, food, specialFood, score, gameLoop, speed, highScore = 0;
 
 document.addEventListener("keydown", event => {
   if ((event.key === "ArrowLeft" || event.key === "a") && direction !== "right") direction = "left";
@@ -102,7 +103,6 @@ function startGame() {
   document.getElementById("gameOver").style.display = "none";
   canvas.style.display = "block";
 
-  // Mostrar controles se for mobile
   if (/Mobi|Android/i.test(navigator.userAgent)) {
     document.getElementById("controls").style.display = "block";
   } else {
@@ -114,21 +114,32 @@ function startGame() {
   score = 0;
   speed = 100;
 
-  food = {
-    x: Math.floor(Math.random() * 20) * box,
-    y: Math.floor(Math.random() * 20) * box
-  };
+  food = randomFood();
+  specialFood = null;
 
   if (gameLoop) clearInterval(gameLoop);
   gameLoop = setInterval(draw, speed);
 }
 
+function randomFood() {
+  return {
+    x: Math.floor(Math.random() * 20) * box,
+    y: Math.floor(Math.random() * 20) * box
+  };
+}
+
 function draw() {
   ctx.clearRect(0, 0, 400, 400);
 
-  // Comida
+  // Comida normal
   ctx.fillStyle = "red";
   ctx.fillRect(food.x, food.y, box, box);
+
+  // Comida especial
+  if (specialFood) {
+    ctx.fillStyle = "gold";
+    ctx.fillRect(specialFood.x, specialFood.y, box, box);
+  }
 
   // Cobra
   for (let i = 0; i < snake.length; i++) {
@@ -145,19 +156,26 @@ function draw() {
   if (direction === "right") headX += box;
   if (direction === "down") headY += box;
 
-  // Comer comida
+  // Comer comida normal
   if (headX === food.x && headY === food.y) {
     score++;
-    food = {
-      x: Math.floor(Math.random() * 20) * box,
-      y: Math.floor(Math.random() * 20) * box
-    };
+    food = randomFood();
 
-    if (score % 5 === 0 && speed > 50) {
+    // Chance de aparecer comida especial
+    if (Math.random() < 0.2) {
+      specialFood = randomFood();
+    }
+
+    if (score % 10 === 0 && speed > 50) {
       clearInterval(gameLoop);
       speed -= 10;
       gameLoop = setInterval(draw, speed);
     }
+  } else if (specialFood && headX === specialFood.x && headY === specialFood.y) {
+    score += 3;
+    specialFood = null;
+    document.body.style.background = "#333";
+    setTimeout(() => document.body.style.background = "#111", 200);
   } else {
     snake.pop();
   }
@@ -174,6 +192,8 @@ function draw() {
     document.getElementById("controls").style.display = "none";
     document.getElementById("gameOver").style.display = "block";
     document.getElementById("finalScore").innerText = "Pontuação final: " + score;
+    if (score > highScore) highScore = score;
+    document.getElementById("highScore").innerText = "🏆 Recorde: " + highScore;
     return;
   }
 
