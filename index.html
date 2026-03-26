@@ -34,6 +34,20 @@
     color: #111;
     border-radius: 5px;
   }
+  .controls {
+    display: none;
+    margin-top: 15px;
+  }
+  .controls button {
+    width: 60px;
+    height: 60px;
+    font-size: 24px;
+    margin: 5px;
+    background: #0f0;
+    color: #111;
+    border: none;
+    border-radius: 10px;
+  }
 </style>
 </head>
 <body>
@@ -44,6 +58,17 @@
 </div>
 
 <canvas id="game" width="400" height="400"></canvas>
+
+<div id="controls" class="controls">
+  <div>
+    <button onclick="setDirection('up')">⬆️</button>
+  </div>
+  <div>
+    <button onclick="setDirection('left')">⬅️</button>
+    <button onclick="setDirection('down')">⬇️</button>
+    <button onclick="setDirection('right')">➡️</button>
+  </div>
+</div>
 
 <div id="gameOver" class="menu" style="display:none;">
   <h2>💀 Game Over!</h2>
@@ -59,21 +84,35 @@ const box = 20;
 let snake, direction, food, score, gameLoop, speed;
 
 document.addEventListener("keydown", event => {
-  if (event.key === "ArrowLeft" && direction !== "right") direction = "left";
-  if (event.key === "ArrowUp" && direction !== "down") direction = "up";
-  if (event.key === "ArrowRight" && direction !== "left") direction = "right";
-  if (event.key === "ArrowDown" && direction !== "up") direction = "down";
+  if ((event.key === "ArrowLeft" || event.key === "a") && direction !== "right") direction = "left";
+  if ((event.key === "ArrowUp" || event.key === "w") && direction !== "down") direction = "up";
+  if ((event.key === "ArrowRight" || event.key === "d") && direction !== "left") direction = "right";
+  if ((event.key === "ArrowDown" || event.key === "s") && direction !== "up") direction = "down";
 });
+
+function setDirection(dir) {
+  if (dir === "left" && direction !== "right") direction = "left";
+  if (dir === "up" && direction !== "down") direction = "up";
+  if (dir === "right" && direction !== "left") direction = "right";
+  if (dir === "down" && direction !== "up") direction = "down";
+}
 
 function startGame() {
   document.getElementById("menu").style.display = "none";
   document.getElementById("gameOver").style.display = "none";
   canvas.style.display = "block";
 
+  // Mostrar controles se for mobile
+  if (/Mobi|Android/i.test(navigator.userAgent)) {
+    document.getElementById("controls").style.display = "block";
+  } else {
+    document.getElementById("controls").style.display = "none";
+  }
+
   snake = [{ x: 9 * box, y: 9 * box }];
   direction = "right";
   score = 0;
-  speed = 100; // velocidade inicial
+  speed = 100;
 
   food = {
     x: Math.floor(Math.random() * 20) * box,
@@ -114,7 +153,6 @@ function draw() {
       y: Math.floor(Math.random() * 20) * box
     };
 
-    // Aumenta a velocidade conforme a pontuação
     if (score % 5 === 0 && speed > 50) {
       clearInterval(gameLoop);
       speed -= 10;
@@ -133,6 +171,7 @@ function draw() {
   ) {
     clearInterval(gameLoop);
     canvas.style.display = "none";
+    document.getElementById("controls").style.display = "none";
     document.getElementById("gameOver").style.display = "block";
     document.getElementById("finalScore").innerText = "Pontuação final: " + score;
     return;
