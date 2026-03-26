@@ -55,6 +55,9 @@
 <div id="menu" class="menu">
   <h1>🐍 Jogo da Cobrinha</h1>
   <button onclick="startGame()">Iniciar Jogo</button>
+  <br><br>
+  <!-- Botão de feedback -->
+  <button onclick="sendFeedback()">Enviar Feedback</button>
 </div>
 
 <canvas id="game" width="400" height="400"></canvas>
@@ -96,6 +99,10 @@ function setDirection(dir) {
   if (dir === "up" && direction !== "down") direction = "up";
   if (dir === "right" && direction !== "left") direction = "right";
   if (dir === "down" && direction !== "up") direction = "down";
+}
+
+function sendFeedback() {
+  window.location.href = "mailto:davifmarschall15@gmail.com?subject=Feedback%20do%20Jogo%20da%20Cobrinha&body=Escreva%20suas%20ideias%20aqui...";
 }
 
 function startGame() {
@@ -161,7 +168,6 @@ function draw() {
     score++;
     food = randomFood();
 
-    // Chance de aparecer comida especial
     if (Math.random() < 0.2) {
       specialFood = randomFood();
     }
