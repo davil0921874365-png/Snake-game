@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jogo da Cobrinha</title>
+<style>
+  body {
+    background: #111;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    color: white;
+    font-family: Arial, sans-serif;
+    flex-direction: column;
+  }
+  canvas {
+    background: #222;
+    border: 2px solid #0f0;
+    display: none;
+  }
+  .menu {
+    text-align: center;
+  }
+  button {
+    padding: 10px 20px;
+    font-size: 18px;
+    margin-top: 15px;
+    cursor: pointer;
+    background: #0f0;
+    border: none;
+    color: #111;
+    border-radius: 5px;
+  }
+</style>
+</head>
+<body>
+
+<div id="menu" class="menu">
+  <h1>🐍 Jogo da Cobrinha</h1>
+  <button onclick="startGame()">Iniciar Jogo</button>
+</div>
+
+<canvas id="game" width="400" height="400"></canvas>
+
+<div id="gameOver" class="menu" style="display:none;">
+  <h2>💀 Game Over!</h2>
+  <p id="finalScore"></p>
+  <button onclick="startGame()">Jogar Novamente</button>
+</div>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+const box = 20;
+let snake, direction, food, score, gameLoop, speed;
+
+document.addEventListener("keydown", event => {
+  if (event.key === "ArrowLeft" && direction !== "right") direction = "left";
+  if (event.key === "ArrowUp" && direction !== "down") direction = "up";
+  if (event.key === "ArrowRight" && direction !== "left") direction = "right";
+  if (event.key === "ArrowDown" && direction !== "up") direction = "down";
+});
+
+function startGame() {
+  document.getElementById("menu").style.display = "none";
+  document.getElementById("gameOver").style.display = "none";
+  canvas.style.display = "block";
+
+  snake = [{ x: 9 * box, y: 9 * box }];
+  direction = "right";
+  score = 0;
+  speed = 100; // velocidade inicial
+
+  food = {
+    x: Math.floor(Math.random() * 20) * box,
+    y: Math.floor(Math.random() * 20) * box
+  };
+
+  if (gameLoop) clearInterval(gameLoop);
+  gameLoop = setInterval(draw, speed);
+}
+
+function draw() {
+  ctx.clearRect(0, 0, 400, 400);
+
+  // Comida
+  ctx.fillStyle = "red";
+  ctx.fillRect(food.x, food.y, box, box);
+
+  // Cobra
+  for (let i = 0; i < snake.length; i++) {
+    ctx.fillStyle = i === 0 ? "lime" : "green";
+    ctx.fillRect(snake[i].x, snake[i].y, box, box);
+  }
+
+  // Movimento
+  let headX = snake[0].x;
+  let headY = snake[0].y;
+
+  if (direction === "left") headX -= box;
+  if (direction === "up") headY -= box;
+  if (direction === "right") headX += box;
+  if (direction === "down") headY += box;
+
+  // Comer comida
+  if (headX === food.x && headY === food.y) {
+    score++;
+    food = {
+      x: Math.floor(Math.random() * 20) * box,
+      y: Math.floor(Math.random() * 20) * box
+    };
+
+    // Aumenta a velocidade conforme a pontuação
+    if (score % 5 === 0 && speed > 50) {
+      clearInterval(gameLoop);
+      speed -= 10;
+      gameLoop = setInterval(draw, speed);
+    }
+  } else {
+    snake.pop();
+  }
+
+  const newHead = { x: headX, y: headY };
+
+  // Colisão
+  if (
+    headX < 0 || headX >= 400 || headY < 0 || headY >= 400 ||
+    snake.some(segment => segment.x === newHead.x && segment.y === newHead.y)
+  ) {
+    clearInterval(gameLoop);
+    canvas.style.display = "none";
+    document.getElementById("gameOver").style.display = "block";
+    document.getElementById("finalScore").innerText = "Pontuação final: " + score;
+    return;
+  }
+
+  snake.unshift(newHead);
+
+  // Mostrar pontuação
+  ctx.fillStyle = "white";
+  ctx.font = "20px Arial";
+  ctx.fillText("Pontuação: " + score, 10, 20);
+}
+</script>
+</body>
+</html>
