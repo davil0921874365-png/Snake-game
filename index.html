@@ -16,6 +16,7 @@
 <div id="menu" class="menu">
   <h1>🐍 Jogo da Cobrinha</h1>
   <button onclick="startGame()">Iniciar Jogo</button>
+  <button onclick="openShop()">Loja de Skins</button>
   <button onclick="sendFeedback()">Enviar Feedback</button>
   <p>Use W A S D ou ⬆️ ⬅️ ⬇️ ➡️</p>
 </div>
@@ -33,11 +34,22 @@
   <h2>💀 Game Over!</h2>
   <p id="finalScore"></p>
   <button onclick="startGame()">Jogar Novamente</button>
+  <button onclick="openShop()">Loja de Skins</button>
+</div>
+
+<div id="shop" class="menu" style="display:none;">
+  <h2>🛒 Loja de Skins</h2>
+  <p id="coinsText"></p>
+  <button onclick="buySkin('green',5)">Skin Verde (5 pontos)</button>
+  <button onclick="buySkin('blue',10)">Skin Azul (10 pontos)</button>
+  <button onclick="buySkin('rainbow',20)">Skin Arco-Íris (20 pontos)</button>
+  <br><br>
+  <button onclick="backMenu()">Voltar</button>
 </div>
 
 <script>
 const canvas=document.getElementById("game"),ctx=canvas.getContext("2d");
-let box=20,snake,direction,food,specialFood,score,gameLoop;
+let box=20,snake,direction,food,specialFood,score,gameLoop,coins=0,currentSkin="green";
 
 function sendFeedback(){
   window.location.href="mailto:davifmarschall15@gmail.com?subject=Feedback%20Snake%20Game";
@@ -50,6 +62,7 @@ function isMobile(){
 function startGame(){
   document.getElementById("menu").style.display="none";
   document.getElementById("gameOver").style.display="none";
+  document.getElementById("shop").style.display="none";
   canvas.style.display="block";
   if(isMobile()) document.getElementById("controls").style.display="block";
   else document.getElementById("controls").style.display="none";
@@ -96,9 +109,15 @@ function draw(){
     ctx.fillRect(specialFood.x,specialFood.y,box,box);
   }
 
-  // cobra
+  // cobra com skin
   for(let i=0;i<snake.length;i++){
-    ctx.fillStyle=i===0?"lime":"green";
+    if(currentSkin==="green"){
+      ctx.fillStyle=i===0?"lime":"green";
+    }else if(currentSkin==="blue"){
+      ctx.fillStyle=i===0?"cyan":"blue";
+    }else if(currentSkin==="rainbow"){
+      ctx.fillStyle=["red","orange","yellow","green","blue","purple"][i%6];
+    }
     ctx.fillRect(snake[i].x,snake[i].y,box,box);
   }
 
@@ -111,8 +130,8 @@ function draw(){
   // comer comida normal
   if(headX===food.x&&headY===food.y){
     score++;
+    coins++; // cada ponto vira moeda
     food=randomFood();
-    // chance de aparecer comida especial
     if(Math.random()<0.3){
       specialFood=randomFood();
     }
@@ -120,6 +139,7 @@ function draw(){
   // comer comida especial
   else if(specialFood && headX===specialFood.x && headY===specialFood.y){
     score+=3;
+    coins+=3;
     specialFood=null;
   }
   else{
@@ -133,7 +153,7 @@ function draw(){
     clearInterval(gameLoop);
     canvas.style.display="none";
     document.getElementById("gameOver").style.display="block";
-    document.getElementById("finalScore").innerText="Pontuação: "+score;
+    document.getElementById("finalScore").innerText="Pontuação: "+score+" | Moedas: "+coins;
     return;
   }
 
@@ -141,7 +161,33 @@ function draw(){
 
   ctx.fillStyle="white";
   ctx.font="20px Arial";
-  ctx.fillText("Pontuação: "+score,10,20);
+  ctx.fillText("Pontuação: "+score+" | Moedas: "+coins,10,20);
+}
+
+// Loja
+function openShop(){
+  document.getElementById("menu").style.display="none";
+  document.getElementById("gameOver").style.display="none";
+  document.getElementById("shop").style.display="block";
+  document.getElementById("coinsText").innerText="Você tem "+coins+" moedas";
+}
+
+function buySkin(skin,cost){
+  if(coins>=cost){
+    coins-=cost;
+    currentSkin=skin;
+    alert("Skin "+skin+" equipada!");
+    backMenu();
+  }else{
+    alert("Moedas insuficientes!");
+  }
+}
+
+function backMenu(){
+  document.getElementById("menu").style.display="block";
+  document.getElementById("shop").style.display="none";
+  document.getElementById("gameOver").style.display="none";
+  canvas.style.display="none";
 }
 </script>
 </body>
