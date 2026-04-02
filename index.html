@@ -2,16 +2,25 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>🐍 Snake Game! (Alpha 1.0.0)</title>
+<title>🐍 Snake Game! (Alpha 1.0.1)</title>
 <style>
   body { background:#111; display:flex; justify-content:center; align-items:center; height:100vh; margin:0; color:white; font-family:Arial; flex-direction:column; }
   canvas { background:#222; border:2px solid #0f0; display:none; }
   .menu { text-align:center; }
   button { padding:10px 20px; font-size:18px; margin:10px; cursor:pointer; background:#0f0; border:none; color:#111; border-radius:5px; }
   #controls button { font-size:24px; margin:5px; }
+  #updateAlert {
+    position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+    background: rgba(0, 255, 0, 0.9); color: #000; padding: 15px 25px;
+    border-radius: 8px; font-size: 18px; font-weight: bold; z-index: 100;
+    box-shadow: 0 0 15px #0f0; display: none;
+  }
 </style>
 </head>
 <body>
+
+<div id="updateAlert">🐍 Snake Game - Versão Alpha 1.0.1<br>
+Correções de bugs + Remaster da Skin Sombra</div>
 
 <div id="menu" class="menu">
   <h1>🐍 Jogo da Cobrinha</h1>
@@ -66,192 +75,250 @@
 </div>
 
 <script>
-const canvas=document.getElementById("game"),ctx=canvas.getContext("2d");
-let box=20,snake,direction,food,specialFood,score,gameLoop,coins=0,currentSkin="green",mode="normal",speed=100,hardcorePlays=0;
-let missions={mission1:false,mission2:false,mission3:false},specialCount=0,obstacles=[];
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+let box = 20, snake, direction, food, specialFood, score, gameLoop, coins = 0;
+let currentSkin = "green", mode = "normal", speed = 100, hardcorePlays = 0;
+let missions = {mission1:false, mission2:false, mission3:false};
+let specialCount = 0, obstacles = [];
 
 // Feedback
 function sendFeedback(){
-  window.location.href="mailto:davifmarschall15@gmail.com?subject=Feedback%20Snake%20Game";
+  window.location.href = "mailto:davifmarschall15@gmail.com?subject=Feedback%20Snake%20Game";
 }
 
-// Detecta mobile
 function isMobile(){
   return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 }
+
 window.onload = function(){
   if(isMobile()){
     document.getElementById("controlsInfo").innerText = "📱 Use os botões de seta na tela";
-    document.getElementById("controls").style.display="block";
+    document.getElementById("controls").style.display = "block";
   } else {
     document.getElementById("controlsInfo").innerText = "💻 Use W A S D ou ⬆️ ⬅️ ⬇️ ➡️ no teclado";
   }
+  
+  // Mostra o aviso de atualização por 4 segundos
+  const alertBox = document.getElementById("updateAlert");
+  alertBox.style.display = "block";
+  setTimeout(() => {
+    alertBox.style.display = "none";
+  }, 4000);
 };
 
 function startGame(selectedMode){
-  mode=selectedMode;
-  if(mode==="hardcore") hardcorePlays++;
-  document.getElementById("menu").style.display="none";
-  document.getElementById("gameOver").style.display="none";
-  document.getElementById("shop").style.display="none";
-  document.getElementById("missions").style.display="none";
-  canvas.style.display="block";
-  snake=[{x:9*box,y:9*box}];
-  direction="right";
-  score=0;
-  food=randomFood();
-  specialFood=null;
-  obstacles=[];
-  if(gameLoop)clearInterval(gameLoop);
-  speed=100;
-  gameLoop=setInterval(draw,speed);
+  mode = selectedMode;
+  if(mode === "hardcore") hardcorePlays++;
+  
+  document.getElementById("menu").style.display = "none";
+  document.getElementById("gameOver").style.display = "none";
+  document.getElementById("shop").style.display = "none";
+  document.getElementById("missions").style.display = "none";
+  canvas.style.display = "block";
+
+  snake = [{x: 9*box, y: 9*box}];
+  direction = "right";
+  score = 0;
+  food = randomFood();
+  specialFood = null;
+  obstacles = [];
+  
+  if(gameLoop) clearInterval(gameLoop);
+  speed = 100;
+  gameLoop = setInterval(draw, speed);
 }
 
 function randomFood(){
   return {
-    x:Math.floor(Math.random()*(canvas.width/box))*box,
-    y:Math.floor(Math.random()*(canvas.height/box))*box
+    x: Math.floor(Math.random() * (canvas.width / box)) * box,
+    y: Math.floor(Math.random() * (canvas.height / box)) * box
   };
 }
 
-document.addEventListener("keydown",e=>{
-  if((e.key==="ArrowLeft"||e.key==="a")&&direction!=="right")direction="left";
-  if((e.key==="ArrowUp"||e.key==="w")&&direction!=="down")direction="up";
-  if((e.key==="ArrowRight"||e.key==="d")&&direction!=="left")direction="right";
-  if((e.key==="ArrowDown"||e.key==="s")&&direction!=="up")direction="down";
+document.addEventListener("keydown", e => {
+  if((e.key === "ArrowLeft" || e.key === "a") && direction !== "right") direction = "left";
+  if((e.key === "ArrowUp" || e.key === "w") && direction !== "down") direction = "up";
+  if((e.key === "ArrowRight" || e.key === "d") && direction !== "left") direction = "right";
+  if((e.key === "ArrowDown" || e.key === "s") && direction !== "up") direction = "down";
 });
 
-function draw(){
-  ctx.clearRect(0,0,canvas.width,canvas.height);
+function setDirection(dir){
+  if((dir === "left" && direction !== "right") ||
+     (dir === "up" && direction !== "down") ||
+     (dir === "right" && direction !== "left") ||
+     (dir === "down" && direction !== "up")){
+    direction = dir;
+  }
+}
 
-  // Obstáculos hardcore
-  if(mode==="hardcore" && Math.random()<0.02){
+function draw(){
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Obstáculos no hardcore
+  if(mode === "hardcore" && Math.random() < 0.02){
     obstacles.push(randomFood());
   }
-  ctx.fillStyle="gray";
-  obstacles.forEach(o=>ctx.fillRect(o.x,o.y,box,box));
+  ctx.fillStyle = "gray";
+  obstacles.forEach(o => ctx.fillRect(o.x, o.y, box, box));
 
-  ctx.fillStyle="red";
-  ctx.fillRect(food.x,food.y,box,box);
+  // Comida normal
+  ctx.fillStyle = "red";
+  ctx.fillRect(food.x, food.y, box, box);
 
+  // Comida especial
   if(specialFood){
-    ctx.fillStyle="gold";
-    ctx.fillRect(specialFood.x,specialFood.y,box,box);
+    ctx.fillStyle = "gold";
+    ctx.fillRect(specialFood.x, specialFood.y, box, box);
   }
 
-  for(let i=0;i<snake.length;i++){
-    if(currentSkin==="green") ctx.fillStyle=i===0?"lime":"green";
-    else if(currentSkin==="blue") ctx.fillStyle=i===0?"cyan":"blue";
-    else if(currentSkin==="rainbow") ctx.fillStyle=["red","orange","yellow","green","blue","purple"][i%6];
-    else if(currentSkin==="fire") ctx.fillStyle=["red","orange","yellow"][i%3];
-    else if(currentSkin==="ice") ctx.fillStyle=i%2===0?"cyan":"white";
-    else if(currentSkin==="shadow") ctx.fillStyle="black";
-    ctx.fillRect(snake[i].x,snake[i].y,box,box);
-  }
+  // Desenha a cobra
+  for(let i = 0; i < snake.length; i++){
+    if(currentSkin === "green") ctx.fillStyle = i === 0 ? "lime" : "green";
+    else if(currentSkin === "blue") ctx.fillStyle = i === 0 ? "cyan" : "blue";
+    else if(currentSkin === "rainbow") ctx.fillStyle = ["red","orange","yellow","green","blue","purple"][i%6];
+    else if(currentSkin === "fire") ctx.fillStyle = ["red","orange","yellow"][i%3];
+    else if(currentSkin === "ice") ctx.fillStyle = i%2 === 0 ? "cyan" : "white";
+    else if(currentSkin === "shadow") ctx.fillStyle = "black";
+    else ctx.fillStyle = "lime";
 
-  let headX=snake[0].x,headY=snake[0].y;
-  if(direction==="left")headX-=box;
-  if(direction==="up")headY-=box;
-  if(direction==="right")headX+=box;
-  if(direction==="down")headY+=box;
+    ctx.fillRect(snake[i].x, snake[i].y, box, box);
 
-  if(headX===food.x&&headY===food.y){
-    score++;
-    coins++;
-    food=randomFood();
-    if(Math.random()<0.3) specialFood=randomFood();
-    if(mode==="hardcore"){
-      speed=Math.max(40,speed-5);
-      clearInterval(gameLoop);
-      gameLoop=setInterval(draw,speed);
+    // === REMASTER DA SKIN SOMBRA - DOIS OLHOS BRANCOS ===
+    if(currentSkin === "shadow" && i === 0){
+      ctx.fillStyle = "white";
+      const eyeSize = 4;
+      const offset = 5;
+
+      if(direction === "right"){
+        ctx.fillRect(snake[i].x + 12, snake[i].y + offset, eyeSize, eyeSize);     // olho esquerdo
+        ctx.fillRect(snake[i].x + 12, snake[i].y + box - offset - eyeSize, eyeSize, eyeSize); // olho direito
+      }
+      else if(direction === "left"){
+        ctx.fillRect(snake[i].x + 4, snake[i].y + offset, eyeSize, eyeSize);
+        ctx.fillRect(snake[i].x + 4, snake[i].y + box - offset - eyeSize, eyeSize, eyeSize);
+      }
+      else if(direction === "up"){
+        ctx.fillRect(snake[i].x + offset, snake[i].y + 4, eyeSize, eyeSize);
+        ctx.fillRect(snake[i].x + box - offset - eyeSize, snake[i].y + 4, eyeSize, eyeSize);
+      }
+      else if(direction === "down"){
+        ctx.fillRect(snake[i].x + offset, snake[i].y + 12, eyeSize, eyeSize);
+        ctx.fillRect(snake[i].x + box - offset - eyeSize, snake[i].y + 12, eyeSize, eyeSize);
+      }
     }
   }
-  else if(specialFood && headX===specialFood.x && headY===specialFood.y){
-    score+=3;
-    coins+=3;
-    specialFood=null;
+
+  // Movimento da cabeça
+  let headX = snake[0].x;
+  let headY = snake[0].y;
+
+  if(direction === "left") headX -= box;
+  if(direction === "up") headY -= box;
+  if(direction === "right") headX += box;
+  if(direction === "down") headY += box;
+
+  // Comer comida
+  if(headX === food.x && headY === food.y){
+    score++;
+    coins++;
+    food = randomFood();
+    if(Math.random() < 0.3) specialFood = randomFood();
+    if(mode === "hardcore"){
+      speed = Math.max(40, speed - 5);
+      clearInterval(gameLoop);
+      gameLoop = setInterval(draw, speed);
+    }
+  }
+  else if(specialFood && headX === specialFood.x && headY === specialFood.y){
+    score += 3;
+    coins += 3;
+    specialFood = null;
     specialCount++;
   }
-  else{
+  else {
     snake.pop();
   }
 
-  const newHead={x:headX,y:headY};
-    if(headX<0||headX>=canvas.width||headY<0||headY>=canvas.height
-     || snake.some(s=>s.x===newHead.x&&s.y===newHead.y)
-     || obstacles.some(o=>o.x===newHead.x&&o.y===newHead.y)){
+  const newHead = {x: headX, y: headY};
+
+  // Colisão
+  if(headX < 0 || headX >= canvas.width || headY < 0 || headY >= canvas.height ||
+     snake.some(s => s.x === newHead.x && s.y === newHead.y) ||
+     obstacles.some(o => o.x === newHead.x && o.y === newHead.y)){
+    
     clearInterval(gameLoop);
-    canvas.style.display="none";
-    document.getElementById("gameOver").style.display="block";
-    document.getElementById("finalScore").innerText="Pontuação: "+score+" | Moedas: "+coins;
+    canvas.style.display = "none";
+    document.getElementById("gameOver").style.display = "block";
+    document.getElementById("finalScore").innerText = "Pontuação: " + score + " | Moedas: " + coins;
     checkMissions();
     return;
   }
 
   snake.unshift(newHead);
 
-  ctx.fillStyle="white";
-  ctx.font="20px Arial";
-  ctx.fillText("Pontuação: "+score+" | Moedas: "+coins,10,20);
+  // HUD
+  ctx.fillStyle = "white";
+  ctx.font = "20px Arial";
+  ctx.fillText("Pontuação: " + score + " | Moedas: " + coins, 10, 20);
 }
 
-// Loja
+// Funções da loja e missões (mesmas de antes)
 function openShop(){
-  document.getElementById("menu").style.display="none";
-  document.getElementById("gameOver").style.display="none";
-  document.getElementById("missions").style.display="none";
-  document.getElementById("shop").style.display="block";
-  document.getElementById("coinsText").innerText="Você tem "+coins+" moedas";
+  document.getElementById("menu").style.display = "none";
+  document.getElementById("gameOver").style.display = "none";
+  document.getElementById("missions").style.display = "none";
+  document.getElementById("shop").style.display = "block";
+  document.getElementById("coinsText").innerText = "Você tem " + coins + " moedas";
 }
 
-function buySkin(skin,cost){
-  if(coins>=cost){
-    coins-=cost;
-    currentSkin=skin;
-    alert("Skin "+skin+" equipada!");
+function buySkin(skin, cost){
+  if(coins >= cost){
+    coins -= cost;
+    currentSkin = skin;
+    alert("Skin " + skin + " equipada com sucesso!");
     backMenu();
-  }else{
+  } else {
     alert("Moedas insuficientes!");
   }
 }
 
-// Missões
 function openMissions(){
-  document.getElementById("menu").style.display="none";
-  document.getElementById("shop").style.display="none";
-  document.getElementById("gameOver").style.display="none";
-  document.getElementById("missions").style.display="block";
+  document.getElementById("menu").style.display = "none";
+  document.getElementById("shop").style.display = "none";
+  document.getElementById("gameOver").style.display = "none";
+  document.getElementById("missions").style.display = "block";
   checkMissions();
 }
 
 function checkMissions(){
-  if(score>=30 && !missions.mission1){
-    missions.mission1=true;
-    coins+=10;
+  if(score >= 30 && !missions.mission1){
+    missions.mission1 = true;
+    coins += 10;
     alert("📜 Missão concluída: 30 pontos! +10 moedas");
   }
-  if(specialCount>=3 && !missions.mission2){
-    missions.mission2=true;
-    currentSkin="rainbow";
+  if(specialCount >= 3 && !missions.mission2){
+    missions.mission2 = true;
+    currentSkin = "rainbow";
     alert("📜 Missão concluída: 3 comidas especiais! Skin Arco-Íris desbloqueada!");
   }
-  if(hardcorePlays>=2 && !missions.mission3){
-    missions.mission3=true;
-    coins+=20;
+  if(hardcorePlays >= 2 && !missions.mission3){
+    missions.mission3 = true;
+    coins += 20;
     alert("📜 Missão concluída: 2 partidas Hardcore! +20 moedas");
   }
 
-  document.getElementById("mission1").innerText = "Ganhe 30 pontos em uma partida " + (missions.mission1?"✅":"❌");
-  document.getElementById("mission2").innerText = "Coma 3 comidas especiais " + (missions.mission2?"✅":"❌");
-  document.getElementById("mission3").innerText = "Jogue 2 vezes no modo Hardcore " + (missions.mission3?"✅":"❌");
+  document.getElementById("mission1").innerText = "Ganhe 30 pontos em uma partida " + (missions.mission1 ? "✅" : "❌");
+  document.getElementById("mission2").innerText = "Coma 3 comidas especiais " + (missions.mission2 ? "✅" : "❌");
+  document.getElementById("mission3").innerText = "Jogue 2 vezes no modo Hardcore " + (missions.mission3 ? "✅" : "❌");
 }
 
 function backMenu(){
-  document.getElementById("menu").style.display="block";
-  document.getElementById("shop").style.display="none";
-  document.getElementById("gameOver").style.display="none";
-  document.getElementById("missions").style.display="none";
-  canvas.style.display="none";
+  document.getElementById("menu").style.display = "block";
+  document.getElementById("shop").style.display = "none";
+  document.getElementById("gameOver").style.display = "none";
+  document.getElementById("missions").style.display = "none";
+  canvas.style.display = "none";
 }
 </script>
 </body>
