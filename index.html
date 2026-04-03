@@ -101,21 +101,10 @@
     font-weight: bold;
     display: none;
     z-index: 200;
+    box-shadow: 0 0 15px #f00;
   }
 
-  /* Caixa secreta de senha no menu */
-  #secretPass {
-    position: fixed;
-    bottom: 15px;
-    right: 15px;
-    opacity: 0.15;
-    font-size: 14px;
-    background: transparent;
-    border: none;
-    color: white;
-    text-align: center;
-    width: 80px;
-  }
+  ul { text-align: left; line-height: 2; font-size: 17px; }
 </style>
 </head>
 <body>
@@ -127,7 +116,8 @@
 
 <div id="contestAlert">
   🔥 Desafio da Cobrinha Épico 🔥<br>
-  Faça a maior pontuação possível!
+  Faça a maior pontuação possível!<br>
+  <strong>O vencedor ganha menção especial no site!</strong>
 </div>
 
 <div id="gameMessage"></div>
@@ -147,21 +137,11 @@
 
 <canvas id="game" width="400" height="400"></canvas>
 
-<!-- WHATSAPP -->
-<div id="whatsappScreen" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#111; z-index:300; flex-direction:column;">
-  <div style="background:#00a884; padding:15px; color:white; font-size:20px; text-align:center; display:flex; align-items:center; gap:15px;">
-    <button onclick="backToMenu()" style="background:none; border:none; color:white; font-size:24px;">←</button>
-    <span id="whatsappTitle"></span>
-  </div>
-  
-  <div id="whatsappChat" style="flex:1; padding:20px; overflow-y:auto; background:#0f0f0f; display:flex; flex-direction:column; gap:10px;"></div>
-  
-  <div style="background:#1f1f1f; padding:10px; display:flex;">
-    <input type="text" id="whatsappInput" placeholder="Digite uma mensagem..." 
-           style="flex:1; padding:14px; border-radius:30px; border:none; background:#333; color:white;" 
-           onkeypress="if(event.key==='Enter') sendWhatsAppMessage()">
-    <button onclick="sendWhatsAppMessage()" style="margin-left:10px; background:#00a884; color:white; border:none; width:50px; border-radius:50%;">➤</button>
-  </div>
+<div id="controls" style="display:none; text-align:center; margin-top:10px;">
+  <button onclick="setDirection('up')">⬆️</button><br>
+  <button onclick="setDirection('left')">⬅️</button>
+  <button onclick="setDirection('down')">⬇️</button>
+  <button onclick="setDirection('right')">➡️</button>
 </div>
 
 <div id="gameOver" class="menu" style="display:none;">
@@ -177,6 +157,7 @@
 <div id="shop" class="menu" style="display:none;">
   <h2>🛒 Loja de Skins</h2>
   <p id="coinsText"></p>
+  
   <button onclick="buySkin('green',5)">🌿 Verde Clássica (5)</button>
   <button onclick="buySkin('blue',10)">🔵 Azul (10)</button>
   <button onclick="buySkin('rainbow',20)">🌈 Arco-Íris (20)</button>
@@ -187,6 +168,7 @@
   <button onclick="buySkin('neon',75)">💡 Neon (75)</button>
   <button onclick="buySkin('toxic',90)">☣️ Tóxica (90)</button>
   <button onclick="buySkin('galaxy',120)">🌌 Galáxia (120)</button>
+  
   <br><br>
   <button onclick="backMenu()">⬅️ Voltar</button>
 </div>
@@ -204,12 +186,7 @@
   <button onclick="backMenu()">⬅️ Voltar</button>
 </div>
 
-<!-- Caixa secreta de senha -->
-<input type="password" id="secretPass" maxlength="4" placeholder="Senha" 
-       style="position:fixed; bottom:15px; right:15px; opacity:0.08; background:transparent; border:none; color:transparent; width:90px; text-align:center;">
-
 <script>
-// ====================== SNAKE GAME ======================
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 let box = 20, snake, direction, food, specialFood, score, gameLoop, coins = 0;
@@ -218,74 +195,6 @@ let missions = {m1:false, m2:false, m3:false, m4:false, m5:false, m6:false};
 let specialCount = 0, normalEaten = 0, obstacles = [];
 let skinsOwned = new Set(["green"]);
 
-let whatsappMessages = [];
-let currentWhatsAppUser = null;
-
-// Senhas
-const users = {
-  "4268": "Fragoso",
-  "3876": "Wuboski Rara"
-};
-
-// Detecta senha digitada na caixa secreta
-document.getElementById("secretPass").addEventListener("input", function() {
-  const pass = this.value.trim();
-  if (users[pass]) {
-    currentWhatsAppUser = users[pass];
-    this.value = ""; // limpa a caixa
-    openWhatsApp();
-  }
-});
-
-function openWhatsApp() {
-  document.getElementById("menu").style.display = "none";
-  document.getElementById("gameOver").style.display = "none";
-  document.getElementById("whatsappScreen").style.display = "flex";
-  
-  document.getElementById("whatsappTitle").textContent = currentWhatsAppUser;
-  
-  renderWhatsAppMessages();
-}
-
-function renderWhatsAppMessages() {
-  const chat = document.getElementById("whatsappChat");
-  chat.innerHTML = "";
-
-  whatsappMessages.forEach(msg => {
-    const div = document.createElement("div");
-    div.style.maxWidth = "80%";
-    div.style.padding = "12px 16px";
-    div.style.borderRadius = "18px";
-    div.style.margin = "6px 0";
-    div.style.alignSelf = msg.from === currentWhatsAppUser ? "flex-end" : "flex-start";
-    div.style.background = msg.from === currentWhatsAppUser ? "#00a884" : "#333";
-    div.style.color = "white";
-    div.innerHTML = `<strong>${msg.from}:</strong><br>${msg.text}`;
-    chat.appendChild(div);
-  });
-  chat.scrollTop = chat.scrollHeight;
-}
-
-function sendWhatsAppMessage() {
-  const input = document.getElementById("whatsappInput");
-  const text = input.value.trim();
-  if (!text || !currentWhatsAppUser) return;
-
-  whatsappMessages.push({
-    from: currentWhatsAppUser,
-    text: text
-  });
-
-  renderWhatsAppMessages();
-  input.value = "";
-}
-
-function backToMenu() {
-  document.getElementById("whatsappScreen").style.display = "none";
-  document.getElementById("menu").style.display = "block";
-}
-
-// ====================== RESTO DO JOGO ======================
 function showGameMessage(text, isSuccess = false) {
   const msg = document.getElementById("gameMessage");
   msg.innerText = text;
@@ -294,25 +203,37 @@ function showGameMessage(text, isSuccess = false) {
   setTimeout(() => msg.style.display = "none", 2800);
 }
 
+function sendFeedback(){
+  window.location.href = "mailto:davifmarschall15@gmail.com?subject=Feedback%20Snake%20Game";
+}
+
+function isMobile(){
+  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+}
+
 window.onload = function(){
-  if(/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)){
+  if(isMobile()){
     document.getElementById("controlsInfo").innerText = "📱 Use os botões de seta na tela";
+    document.getElementById("controls").style.display = "block";
   } else {
     document.getElementById("controlsInfo").innerText = "💻 Use W A S D ou setas no teclado";
   }
   
   document.getElementById("updateAlert").style.display = "block";
   document.getElementById("contestAlert").style.display = "block";
+  
   setTimeout(() => document.getElementById("updateAlert").style.display = "none", 5000);
 };
 
 function startGame(selectedMode){
   mode = selectedMode;
+  totalGames++;
   if(mode === "hardcore") hardcorePlays++;
   
   document.getElementById("menu").style.display = "none";
   document.getElementById("gameOver").style.display = "none";
-  document.getElementById("whatsappScreen").style.display = "none";
+  document.getElementById("shop").style.display = "none";
+  document.getElementById("missions").style.display = "none";
   canvas.style.display = "block";
 
   snake = [{x: 9*box, y: 9*box}];
@@ -335,7 +256,6 @@ function randomFood(){
   };
 }
 
-// Controles do teclado
 document.addEventListener("keydown", e => {
   if((e.key === "ArrowLeft" || e.key.toLowerCase() === "a") && direction !== "right") direction = "left";
   if((e.key === "ArrowUp" || e.key.toLowerCase() === "w") && direction !== "down") direction = "up";
@@ -350,7 +270,6 @@ function setDirection(dir){
   }
 }
 
-// Função draw (coloque aqui a função completa da versão anterior)
 function draw(){
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -440,11 +359,10 @@ function draw(){
   ctx.fillText(`Pontuação: ${score} | Moedas: ${coins}`, 10, 20);
 }
 
-// Funções do jogo
 function openShop(){
   document.getElementById("menu").style.display = "none";
   document.getElementById("gameOver").style.display = "none";
-  document.getElementById("whatsappScreen").style.display = "none";
+  document.getElementById("missions").style.display = "none";
   document.getElementById("shop").style.display = "block";
   document.getElementById("coinsText").innerText = `Você tem ${coins} moedas`;
 }
@@ -463,13 +381,15 @@ function buySkin(skin, cost){
 
 function openMissions(){
   document.getElementById("menu").style.display = "none";
-  document.getElementById("whatsappScreen").style.display = "none";
+  document.getElementById("shop").style.display = "none";
+  document.getElementById("gameOver").style.display = "none";
   document.getElementById("missions").style.display = "block";
   checkMissions();
 }
 
 function checkMissions(){
   let reward = 0;
+
   if(score >= 30 && !missions.m1){ missions.m1 = true; coins += 15; reward += 15; score += 10; showGameMessage("✅ Missão 1 concluída! +15 moedas +10 pontos", true); }
   if(specialCount >= 3 && !missions.m2){ missions.m2 = true; coins += 25; reward += 25; score += 15; showGameMessage("✅ Missão 2 concluída! +25 moedas +15 pontos", true); }
   if(hardcorePlays >= 2 && !missions.m3){ missions.m3 = true; coins += 20; reward += 20; score += 10; showGameMessage("✅ Missão 3 concluída! +20 moedas +10 pontos", true); }
@@ -491,12 +411,8 @@ function backMenu(){
   document.getElementById("menu").style.display = "block";
   document.getElementById("shop").style.display = "none";
   document.getElementById("gameOver").style.display = "none";
-  document.getElementById("whatsappScreen").style.display = "none";
+  document.getElementById("missions").style.display = "none";
   canvas.style.display = "none";
-}
-
-function sendFeedback(){
-  window.location.href = "mailto:davifmarschall15@gmail.com?subject=Feedback%20Snake%20Game";
 }
 </script>
 </body>
