@@ -88,28 +88,6 @@
     display: none;
   }
 
-  #motivationalScreen {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(0, 0, 0, 0.95);
-    color: white;
-    padding: 35px 40px;
-    border-radius: 15px;
-    text-align: center;
-    z-index: 300;
-    border: 3px solid #ff4444;
-    display: none;
-    max-width: 380px;
-  }
-
-  #motivationalScreen h2 {
-    color: #ff4444;
-    margin-top: 0;
-    font-size: 28px;
-  }
-
   #gameMessage {
     position: fixed;
     top: 100px;
@@ -143,18 +121,6 @@
 </div>
 
 <div id="gameMessage"></div>
-
-<!-- Aviso motivacional que aparece na primeira derrota -->
-<div id="motivationalScreen">
-  <h2>😢 NÃO PERCA TUDO!</h2>
-  <p style="font-size:19px; line-height:1.5; margin:20px 0;">
-    Faça login na próxima vez para salvar seu progresso,<br>
-    moedas, skins e pontuações!
-  </p>
-  <button onclick="closeMotivationalScreen()" style="background:#0f0; font-size:18px; padding:14px 30px;">
-    Entendi, continuar jogando
-  </button>
-</div>
 
 <div id="menu" class="menu">
   <h1>🐍 Snake Game</h1>
@@ -228,7 +194,6 @@ let currentSkin = "green", mode = "normal", speed = 100, hardcorePlays = 0, tota
 let missions = {m1:false, m2:false, m3:false, m4:false, m5:false, m6:false};
 let specialCount = 0, normalEaten = 0, obstacles = [];
 let skinsOwned = new Set(["green"]);
-let showedMotivational = false;   // controla se já mostrou o aviso
 
 function showGameMessage(text, isSuccess = false) {
   const msg = document.getElementById("gameMessage");
@@ -259,10 +224,6 @@ window.onload = function(){
   
   setTimeout(() => document.getElementById("updateAlert").style.display = "none", 5000);
 };
-
-function closeMotivationalScreen() {
-  document.getElementById("motivationalScreen").style.display = "none";
-}
 
 function startGame(selectedMode){
   mode = selectedMode;
@@ -386,15 +347,6 @@ function draw(){
     clearInterval(gameLoop);
     canvas.style.display = "none";
     document.getElementById("gameOver").style.display = "block";
-    
-    // Mostra o aviso apenas na PRIMEIRA vez que perde
-    if (!showedMotivational) {
-      setTimeout(() => {
-        document.getElementById("motivationalScreen").style.display = "block";
-        showedMotivational = true;
-      }, 600);
-    }
-    
     document.getElementById("finalScore").innerText = `Pontuação: ${score} | Moedas: ${coins}`;
     checkMissions();
     return;
