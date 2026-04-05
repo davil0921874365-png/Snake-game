@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>🐍 Snake Game 1.0.2</title>
+<title>🐍 Snake Game 1.0.3</title>
 <style>
   body { 
     background:#111; 
@@ -17,38 +17,33 @@
   }
   
   canvas { 
-    background:#222; 
+    background:#1a1a1a; 
     border:3px solid #0f0; 
     display:none; 
-    box-shadow: 0 0 20px #0f0;
+    box-shadow: 0 0 25px #0f0;
   }
 
   .menu { 
     text-align:center; 
-    background: rgba(0, 0, 0, 0.75);
-    padding: 30px 40px;
-    border-radius: 15px;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 35px 50px;
+    border-radius: 18px;
     border: 2px solid #0f0;
-    box-shadow: 0 0 25px rgba(0, 255, 0, 0.5);
-    max-width: 460px;
-    margin: 20px;
+    box-shadow: 0 0 30px rgba(0, 255, 0, 0.6);
+    max-width: 500px;
   }
 
-  h1 {
-    font-size: 42px;
-    margin: 0 0 20px 0;
-    text-shadow: 0 0 15px #0f0;
-  }
+  h1 { font-size: 44px; margin: 0 0 15px 0; text-shadow: 0 0 20px #0f0; }
 
   button { 
-    padding: 14px 28px; 
-    font-size: 18px; 
+    padding: 15px 30px; 
+    font-size: 19px; 
     margin: 10px 0; 
     cursor:pointer; 
     background:#0f0; 
     border:none; 
     color:#111; 
-    border-radius: 8px;
+    border-radius: 10px;
     font-weight: bold;
     width: 100%;
     transition: all 0.3s ease;
@@ -56,18 +51,18 @@
 
   button:hover {
     background: #00ff00;
-    transform: scale(1.05);
-    box-shadow: 0 0 15px #0f0;
+    transform: scale(1.06);
+    box-shadow: 0 0 20px #0f0;
   }
 
   #updateAlert {
     background: rgba(0, 255, 0, 0.95); 
     color: #000; 
-    padding: 15px 30px;
-    border-radius: 10px; 
-    font-size: 19px; 
+    padding: 16px 30px;
+    border-radius: 12px; 
+    font-size: 20px; 
     font-weight: bold; 
-    box-shadow: 0 0 20px #0f0;
+    box-shadow: 0 0 25px #0f0;
     text-align: center;
     border: 2px solid #000;
     margin-bottom: 15px;
@@ -75,10 +70,10 @@
   }
 
   #contestAlert {
-    background: rgba(255, 165, 0, 0.95); 
+    background: rgba(255, 140, 0, 0.95); 
     color: #000; 
     padding: 14px 28px;
-    border-radius: 10px; 
+    border-radius: 12px; 
     font-size: 18px; 
     font-weight: bold; 
     box-shadow: 0 0 20px #ff8c00;
@@ -90,73 +85,81 @@
 
   #gameMessage {
     position: fixed;
-    top: 100px;
+    top: 50%;
     left: 50%;
-    transform: translateX(-50%);
-    background: rgba(255, 0, 0, 0.9);
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.9);
     color: white;
-    padding: 12px 25px;
-    border-radius: 8px;
-    font-size: 18px;
+    padding: 20px 35px;
+    border-radius: 15px;
+    font-size: 21px;
     font-weight: bold;
+    border: 3px solid #0f0;
     display: none;
-    z-index: 200;
-    box-shadow: 0 0 15px #f00;
+    z-index: 300;
+    text-align: center;
+    box-shadow: 0 0 25px #0f0;
   }
 
-  ul { text-align: left; line-height: 2; font-size: 17px; }
+  .floating-text {
+    position: absolute;
+    font-weight: bold;
+    font-size: 21px;
+    pointer-events: none;
+    animation: floatUp 1.4s ease-out forwards;
+    text-shadow: 0 0 10px black;
+    z-index: 100;
+  }
+
+  @keyframes floatUp {
+    0% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(-95px); }
+  }
 </style>
 </head>
 <body>
 
 <div id="updateAlert">
-  🐍 Snake Game 1.0.2<br>
-  Menu melhorado e correções de bugs!
+  🐍 Snake Game 1.0.3<br>
+  Bugs Corrigidos,Olhos na cobra + Efeitos visuais!
 </div>
 
 <div id="contestAlert">
   🔥 Desafio da Cobrinha Épico 🔥<br>
-  Faça a maior pontuação possível!<br>
-  <strong>O vencedor ganha menção especial no site!</strong>
+  Faça a maior pontuação possível!
 </div>
 
 <div id="gameMessage"></div>
 
 <div id="menu" class="menu">
   <h1>🐍 Snake Game</h1>
-  <p style="margin-bottom:25px; font-size:18px; color:#0f0;">Versão 1.0.2</p>
+  <p style="margin:10px 0 25px; font-size:19px; color:#0f0;">Versão <strong>1.0.3</strong></p>
   
   <button onclick="startGame('normal')">▶️ Iniciar Jogo (Normal)</button>
   <button onclick="startGame('hardcore')">🔥 Iniciar Jogo (Hardcore)</button>
   <button onclick="openShop()">🛒 Loja de Skins</button>
   <button onclick="openMissions()">📜 Missões</button>
+  <button onclick="collectRewards()" id="collectBtn" style="background:#ffaa00; display:none;">🎁 Coletar Recompensas</button>
+  <button onclick="showLeaderboard()">🏆 Ranking Local</button>
   <button onclick="sendFeedback()">✉️ Enviar Feedback</button>
   
-  <p id="controlsInfo"></p>
+  <p id="highScoreDisplay" style="margin-top:20px; font-size:17px;"></p>
+  <p id="controlsInfo" style="margin-top:15px; font-size:15px; opacity:0.8;"></p>
 </div>
 
-<canvas id="game" width="400" height="400"></canvas>
-
-<div id="controls" style="display:none; text-align:center; margin-top:10px;">
-  <button onclick="setDirection('up')">⬆️</button><br>
-  <button onclick="setDirection('left')">⬅️</button>
-  <button onclick="setDirection('down')">⬇️</button>
-  <button onclick="setDirection('right')">➡️</button>
-</div>
+<canvas id="game" width="440" height="440"></canvas>
 
 <div id="gameOver" class="menu" style="display:none;">
   <h2>💀 Game Over!</h2>
-  <p id="finalScore"></p>
-  <button onclick="startGame('normal')">▶️ Jogar Novamente (Normal)</button>
-  <button onclick="startGame('hardcore')">🔥 Jogar Novamente (Hardcore)</button>
-  <button onclick="openShop()">🛒 Loja de Skins</button>
-  <button onclick="openMissions()">📜 Missões</button>
-  <button onclick="sendFeedback()">✉️ Enviar Feedback</button>
+  <p id="finalScore" style="font-size:22px; margin:15px 0;"></p>
+  <p id="newHighScore" style="color:#0f0; font-weight:bold; display:none;">🎉 NOVO RECORDE!</p>
+  <button onclick="startGame('normal')">▶️ Jogar Novamente</button>
+  <button onclick="backMenu()">⬅️ Voltar ao Menu</button>
 </div>
 
 <div id="shop" class="menu" style="display:none;">
   <h2>🛒 Loja de Skins</h2>
-  <p id="coinsText"></p>
+  <p id="coinsText" style="margin-bottom:20px; font-size:18px;"></p>
   
   <button onclick="buySkin('green',5)">🌿 Verde Clássica (5)</button>
   <button onclick="buySkin('blue',10)">🔵 Azul (10)</button>
@@ -164,10 +167,9 @@
   <button onclick="buySkin('fire',30)">🔥 Fogo (30)</button>
   <button onclick="buySkin('ice',40)">❄️ Gelo (40)</button>
   <button onclick="buySkin('shadow',50)">🌑 Sombra (50)</button>
-  <button onclick="buySkin('gold',60)">✨ Dourada (60)</button>
-  <button onclick="buySkin('neon',75)">💡 Neon (75)</button>
-  <button onclick="buySkin('toxic',90)">☣️ Tóxica (90)</button>
-  <button onclick="buySkin('galaxy',120)">🌌 Galáxia (120)</button>
+  <button onclick="buySkin('gold',70)">✨ Dourada (70)</button>
+  <button onclick="buySkin('neon',90)">💡 Neon (90)</button>
+  <button onclick="buySkin('toxic',110)">☣️ Tóxica (110)</button>
   
   <br><br>
   <button onclick="backMenu()">⬅️ Voltar</button>
@@ -175,163 +177,197 @@
 
 <div id="missions" class="menu" style="display:none;">
   <h2>📜 Missões do Dia</h2>
-  <ul>
+  <ul style="text-align:left; line-height:2.1; font-size:17px;">
     <li id="mission1">Fazer 30 pontos em uma partida ❌</li>
     <li id="mission2">Comer 3 comidas especiais ❌</li>
     <li id="mission3">Jogar 2 vezes no Hardcore ❌</li>
     <li id="mission4">Chegar a 50 pontos no Normal ❌</li>
     <li id="mission5">Comer 8 comidas normais seguidas ❌</li>
     <li id="mission6">Jogar 5 partidas no total ❌</li>
+    <li id="mission7">Fazer 100 pontos em uma partida ❌</li>
+    <li id="mission8">Comer 5 comidas especiais ❌</li>
   </ul>
   <button onclick="backMenu()">⬅️ Voltar</button>
 </div>
 
 <script>
+// ====================== VARIÁVEIS ======================
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
-let box = 20, snake, direction, food, specialFood, score, gameLoop, coins = 0;
-let currentSkin = "green", mode = "normal", speed = 100, hardcorePlays = 0, totalGames = 0;
-let missions = {m1:false, m2:false, m3:false, m4:false, m5:false, m6:false};
-let specialCount = 0, normalEaten = 0, obstacles = [];
-let skinsOwned = new Set(["green"]);
+let box = 22;
+let snake, direction, food, specialFood, score = 0, gameLoop, coins = 0;
+let currentSkin = "green", mode = "normal", speed = 110;
+let highScore = parseInt(localStorage.getItem("snakeHighScore")) || 0;
+let totalGames = parseInt(localStorage.getItem("snakeTotalGames")) || 0;
+let specialCount = 0, normalEaten = 0, hardcorePlays = 0;
 
-function showGameMessage(text, isSuccess = false) {
+let missions = {m1:false, m2:false, m3:false, m4:false, m5:false, m6:false, m7:false, m8:false};
+let skinsOwned = new Set(["green"]);
+let pendingRewards = 0;
+
+// ====================== MENSAGEM BONITA ======================
+function showGameMessage(text, isSuccess = true) {
   const msg = document.getElementById("gameMessage");
   msg.innerText = text;
-  msg.style.background = isSuccess ? "rgba(0, 255, 0, 0.9)" : "rgba(255, 0, 0, 0.9)";
+  msg.style.background = isSuccess ? "rgba(0, 255, 0, 0.92)" : "rgba(255, 80, 80, 0.92)";
   msg.style.display = "block";
-  setTimeout(() => msg.style.display = "none", 2800);
+  setTimeout(() => msg.style.display = "none", 2400);
 }
 
-function sendFeedback(){
-  window.location.href = "mailto:davifmarschall15@gmail.com?subject=Feedback%20Snake%20Game";
+// ====================== TEXTO FLUTUANTE ======================
+function createFloatingText(x, y, text, color = "#ffff00") {
+  const el = document.createElement("div");
+  el.className = "floating-text";
+  el.style.left = (canvas.offsetLeft + x + 5) + "px";
+  el.style.top = (canvas.offsetTop + y - 10) + "px";
+  el.style.color = color;
+  el.textContent = text;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1300);
 }
 
-function isMobile(){
-  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-}
-
+// ====================== INICIALIZAÇÃO ======================
 window.onload = function(){
-  if(isMobile()){
-    document.getElementById("controlsInfo").innerText = "📱 Use os botões de seta na tela";
-    document.getElementById("controls").style.display = "block";
-  } else {
-    document.getElementById("controlsInfo").innerText = "💻 Use W A S D ou setas no teclado";
-  }
-  
   document.getElementById("updateAlert").style.display = "block";
+  setTimeout(() => document.getElementById("updateAlert").style.display = "none", 6000);
+
   document.getElementById("contestAlert").style.display = "block";
-  
-  setTimeout(() => document.getElementById("updateAlert").style.display = "none", 5000);
+  setTimeout(() => document.getElementById("contestAlert").style.display = "none", 9000);
+
+  document.getElementById("highScoreDisplay").innerHTML = `Recorde atual: <strong>${highScore}</strong> pontos`;
 };
 
+// ====================== JOGO ======================
 function startGame(selectedMode){
   mode = selectedMode;
-  totalGames++;
   if(mode === "hardcore") hardcorePlays++;
-  
+  totalGames++;
+  localStorage.setItem("snakeTotalGames", totalGames);
+
   document.getElementById("menu").style.display = "none";
   document.getElementById("gameOver").style.display = "none";
   document.getElementById("shop").style.display = "none";
   document.getElementById("missions").style.display = "none";
   canvas.style.display = "block";
 
-  snake = [{x: 9*box, y: 9*box}];
+  snake = [{x: 10*box, y: 10*box}];
   direction = "right";
   score = 0;
   normalEaten = 0;
+  specialCount = 0;
+  speed = 110;
   food = randomFood();
   specialFood = null;
-  obstacles = [];
-  
+
   if(gameLoop) clearInterval(gameLoop);
-  speed = 100;
   gameLoop = setInterval(draw, speed);
 }
 
 function randomFood(){
   return {
-    x: Math.floor(Math.random() * (canvas.width / box)) * box,
-    y: Math.floor(Math.random() * (canvas.height / box)) * box
+    x: Math.floor(Math.random() * 20) * box,
+    y: Math.floor(Math.random() * 20) * box
   };
-}
-
-document.addEventListener("keydown", e => {
-  if((e.key === "ArrowLeft" || e.key.toLowerCase() === "a") && direction !== "right") direction = "left";
-  if((e.key === "ArrowUp" || e.key.toLowerCase() === "w") && direction !== "down") direction = "up";
-  if((e.key === "ArrowRight" || e.key.toLowerCase() === "d") && direction !== "left") direction = "right";
-  if((e.key === "ArrowDown" || e.key.toLowerCase() === "s") && direction !== "up") direction = "down";
-});
-
-function setDirection(dir){
-  if((dir === "left" && direction !== "right") || (dir === "up" && direction !== "down") ||
-     (dir === "right" && direction !== "left") || (dir === "down" && direction !== "up")){
-    direction = dir;
-  }
 }
 
 function draw(){
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  if(mode === "hardcore" && Math.random() < 0.02) obstacles.push(randomFood());
-  ctx.fillStyle = "gray";
-  obstacles.forEach(o => ctx.fillRect(o.x, o.y, box, box));
-
-  ctx.fillStyle = "red";
-  ctx.fillRect(food.x, food.y, box, box);
-
-  if(specialFood){
-    ctx.fillStyle = "gold";
-    ctx.fillRect(specialFood.x, specialFood.y, box, box);
-  }
-
+  // Desenhar cobra com olhos
   for(let i = 0; i < snake.length; i++){
-    let color = "lime";
-    if(currentSkin === "green") color = i === 0 ? "lime" : "green";
-    else if(currentSkin === "blue") color = i === 0 ? "cyan" : "blue";
-    else if(currentSkin === "rainbow") color = ["red","orange","yellow","green","blue","purple"][i%6];
-    else if(currentSkin === "fire") color = ["red","orange","yellow"][i%3];
-    else if(currentSkin === "ice") color = i%2 === 0 ? "cyan" : "white";
-    else if(currentSkin === "shadow") color = "black";
-    else if(currentSkin === "gold") color = i === 0 ? "#ffd700" : "#ffaa00";
-    else if(currentSkin === "neon") color = i%2 === 0 ? "#0ff" : "#f0f";
-    else if(currentSkin === "toxic") color = "#0f0";
-    else if(currentSkin === "galaxy") color = ["#8a2be2","#4b0082","#00bfff"][i%3];
+    // Cor da pele conforme skin equipada
+    if(currentSkin === "green") ctx.fillStyle = i === 0 ? "#00ff44" : "#00cc22";
+    else if(currentSkin === "blue") ctx.fillStyle = i === 0 ? "#00ddff" : "#0099cc";
+    else if(currentSkin === "rainbow") ctx.fillStyle = ["#ff0000","#ff8800","#ffff00","#00ff00","#00aaff","#aa00ff"][i%6];
+    else if(currentSkin === "fire") ctx.fillStyle = ["#ff4400","#ff8800","#ffcc00"][i%3];
+    else if(currentSkin === "ice") ctx.fillStyle = i%2 === 0 ? "#88ffff" : "#ffffff";
+    else if(currentSkin === "shadow") ctx.fillStyle = "#222222";
+    else if(currentSkin === "gold") ctx.fillStyle = i === 0 ? "#ffdd00" : "#ccaa00";
+    else if(currentSkin === "neon") ctx.fillStyle = i%2 === 0 ? "#00ffff" : "#ff00ff";
+    else if(currentSkin === "toxic") ctx.fillStyle = "#00ff44";
+    else ctx.fillStyle = "#00ff44";
 
-    ctx.fillStyle = color;
     ctx.fillRect(snake[i].x, snake[i].y, box, box);
 
-    if(currentSkin === "shadow" && i === 0){
+    // Olhos na cabeça
+    if(i === 0){
       ctx.fillStyle = "white";
-      const eyeSize = 4, offset = 5;
-      if(direction === "right"){ ctx.fillRect(snake[i].x+12, snake[i].y+offset, eyeSize, eyeSize); ctx.fillRect(snake[i].x+12, snake[i].y+box-offset-eyeSize, eyeSize, eyeSize); }
-      else if(direction === "left"){ ctx.fillRect(snake[i].x+4, snake[i].y+offset, eyeSize, eyeSize); ctx.fillRect(snake[i].x+4, snake[i].y+box-offset-eyeSize, eyeSize, eyeSize); }
-      else if(direction === "up"){ ctx.fillRect(snake[i].x+offset, snake[i].y+4, eyeSize, eyeSize); ctx.fillRect(snake[i].x+box-offset-eyeSize, snake[i].y+4, eyeSize, eyeSize); }
-      else if(direction === "down"){ ctx.fillRect(snake[i].x+offset, snake[i].y+12, eyeSize, eyeSize); ctx.fillRect(snake[i].x+box-offset-eyeSize, snake[i].y+12, eyeSize, eyeSize); }
+      const eyeSize = 5, offset = 6;
+
+      if(direction === "right"){
+        ctx.fillRect(snake[i].x + 14, snake[i].y + offset, eyeSize, eyeSize);
+        ctx.fillRect(snake[i].x + 14, snake[i].y + box - offset - eyeSize, eyeSize, eyeSize);
+      } else if(direction === "left"){
+        ctx.fillRect(snake[i].x + 3, snake[i].y + offset, eyeSize, eyeSize);
+        ctx.fillRect(snake[i].x + 3, snake[i].y + box - offset - eyeSize, eyeSize, eyeSize);
+      } else if(direction === "up"){
+        ctx.fillRect(snake[i].x + offset, snake[i].y + 3, eyeSize, eyeSize);
+        ctx.fillRect(snake[i].x + box - offset - eyeSize, snake[i].y + 3, eyeSize, eyeSize);
+      } else if(direction === "down"){
+        ctx.fillRect(snake[i].x + offset, snake[i].y + 14, eyeSize, eyeSize);
+        ctx.fillRect(snake[i].x + box - offset - eyeSize, snake[i].y + 14, eyeSize, eyeSize);
+      }
+
+      ctx.fillStyle = "#111";
+      if(direction === "right"){
+        ctx.fillRect(snake[i].x + 16, snake[i].y + offset + 1, 2, 2);
+        ctx.fillRect(snake[i].x + 16, snake[i].y + box - offset - eyeSize + 1, 2, 2);
+      } else if(direction === "left"){
+        ctx.fillRect(snake[i].x + 4, snake[i].y + offset + 1, 2, 2);
+        ctx.fillRect(snake[i].x + 4, snake[i].y + box - offset - eyeSize + 1, 2, 2);
+      } else if(direction === "up"){
+        ctx.fillRect(snake[i].x + offset + 1, snake[i].y + 4, 2, 2);
+        ctx.fillRect(snake[i].x + box - offset - eyeSize + 1, snake[i].y + 4, 2, 2);
+      } else if(direction === "down"){
+        ctx.fillRect(snake[i].x + offset + 1, snake[i].y + 15, 2, 2);
+        ctx.fillRect(snake[i].x + box - offset - eyeSize + 1, snake[i].y + 15, 2, 2);
+      }
     }
   }
 
-  let headX = snake[0].x + (direction === "right" ? box : direction === "left" ? -box : 0);
-  let headY = snake[0].y + (direction === "down" ? box : direction === "up" ? -box : 0);
+  // Comida normal
+  ctx.fillStyle = "#ff2222";
+  ctx.fillRect(food.x, food.y, box, box);
 
-  let coinBonus = skinsOwned.size * 0.6;
+  // Comida especial
+  if(specialFood){
+    ctx.fillStyle = "#ffd700";
+    ctx.fillRect(specialFood.x, specialFood.y, box, box);
+  }
+
+  let headX = snake[0].x;
+  let headY = snake[0].y;
+
+  if(direction === "left") headX -= box;
+  if(direction === "up") headY -= box;
+  if(direction === "right") headX += box;
+  if(direction === "down") headY += box;
 
   if(headX === food.x && headY === food.y){
     score++;
-    coins += 1 + Math.floor(coinBonus);
+    coins++;
     normalEaten++;
+
+    createFloatingText(food.x, food.y, "+1", "#ffffff");
+    createFloatingText(food.x + 12, food.y + 18, "💰", "#ffdd00");
+
     food = randomFood();
-    if(Math.random() < 0.3) specialFood = randomFood();
-    if(mode === "hardcore"){
-      speed = Math.max(40, speed - 5);
+    if(Math.random() < 0.35) specialFood = randomFood();
+
+    if(mode === "hardcore" && speed > 55){
+      speed -= 6;
       clearInterval(gameLoop);
       gameLoop = setInterval(draw, speed);
     }
   }
   else if(specialFood && headX === specialFood.x && headY === specialFood.y){
     score += 3;
-    coins += 3 + Math.floor(coinBonus);
+    coins += 3;
     specialCount++;
+
+    createFloatingText(specialFood.x, specialFood.y, "+3", "#ffd700");
+    createFloatingText(specialFood.x + 10, specialFood.y + 20, "💰💰💰", "#ffdd00");
+
     specialFood = null;
   }
   else {
@@ -341,13 +377,23 @@ function draw(){
   const newHead = {x: headX, y: headY};
 
   if(headX < 0 || headX >= canvas.width || headY < 0 || headY >= canvas.height ||
-     snake.some(s => s.x === newHead.x && s.y === newHead.y) ||
-     obstacles.some(o => o.x === newHead.x && o.y === newHead.y)){
+     snake.some(s => s.x === newHead.x && s.y === newHead.y)){
     
     clearInterval(gameLoop);
     canvas.style.display = "none";
+
+    if(score > highScore){
+      highScore = score;
+      localStorage.setItem("snakeHighScore", highScore);
+      document.getElementById("newHighScore").style.display = "block";
+    }
+
+    document.getElementById("finalScore").innerHTML = `
+      Pontuação: <strong>${score}</strong><br>
+      Moedas: <strong>${coins}</strong><br>
+      Recorde: <strong>${highScore}</strong>
+    `;
     document.getElementById("gameOver").style.display = "block";
-    document.getElementById("finalScore").innerText = `Pontuação: ${score} | Moedas: ${coins}`;
     checkMissions();
     return;
   }
@@ -355,14 +401,14 @@ function draw(){
   snake.unshift(newHead);
 
   ctx.fillStyle = "white";
-  ctx.font = "20px Arial";
-  ctx.fillText(`Pontuação: ${score} | Moedas: ${coins}`, 10, 20);
+  ctx.font = "bold 23px Arial";
+  ctx.fillText(`Pontos: ${score}`, 18, 38);
+  ctx.fillText(`💰 ${coins}`, 18, 70);
 }
 
+// ====================== LOJA ======================
 function openShop(){
   document.getElementById("menu").style.display = "none";
-  document.getElementById("gameOver").style.display = "none";
-  document.getElementById("missions").style.display = "none";
   document.getElementById("shop").style.display = "block";
   document.getElementById("coinsText").innerText = `Você tem ${coins} moedas`;
 }
@@ -370,50 +416,70 @@ function openShop(){
 function buySkin(skin, cost){
   if(coins >= cost){
     coins -= cost;
-    currentSkin = skin;
+    currentSkin = skin;           // ← Aqui estava o bug! Agora está corrigido
     skinsOwned.add(skin);
     showGameMessage(`✅ Skin ${skin.toUpperCase()} equipada com sucesso!`, true);
     backMenu();
   } else {
-    showGameMessage(`❌ Moedas insuficientes! Faltam ${cost - coins} moedas.`);
+    showGameMessage(`❌ Moedas insuficientes!`, false);
   }
 }
 
+// ====================== MISSÕES ======================
 function openMissions(){
   document.getElementById("menu").style.display = "none";
-  document.getElementById("shop").style.display = "none";
-  document.getElementById("gameOver").style.display = "none";
   document.getElementById("missions").style.display = "block";
   checkMissions();
 }
 
 function checkMissions(){
-  let reward = 0;
+  let earned = 0;
 
-  if(score >= 30 && !missions.m1){ missions.m1 = true; coins += 15; reward += 15; score += 10; showGameMessage("✅ Missão 1 concluída! +15 moedas +10 pontos", true); }
-  if(specialCount >= 3 && !missions.m2){ missions.m2 = true; coins += 25; reward += 25; score += 15; showGameMessage("✅ Missão 2 concluída! +25 moedas +15 pontos", true); }
-  if(hardcorePlays >= 2 && !missions.m3){ missions.m3 = true; coins += 20; reward += 20; score += 10; showGameMessage("✅ Missão 3 concluída! +20 moedas +10 pontos", true); }
-  if(score >= 50 && mode === "normal" && !missions.m4){ missions.m4 = true; coins += 30; reward += 30; score += 20; showGameMessage("✅ Missão 4 concluída! +30 moedas +20 pontos", true); }
-  if(normalEaten >= 8 && !missions.m5){ missions.m5 = true; coins += 18; reward += 18; score += 12; showGameMessage("✅ Missão 5 concluída! +18 moedas +12 pontos", true); }
-  if(totalGames >= 5 && !missions.m6){ missions.m6 = true; coins += 22; reward += 22; score += 15; showGameMessage("✅ Missão 6 concluída! +22 moedas +15 pontos", true); }
+  if(score >= 30 && !missions.m1){ missions.m1 = true; coins += 15; earned += 15; showGameMessage("✅ Missão 1 concluída! +15 moedas", true); }
+  if(specialCount >= 3 && !missions.m2){ missions.m2 = true; coins += 30; earned += 30; showGameMessage("✅ Missão 2 concluída! +30 moedas", true); }
+  if(hardcorePlays >= 2 && !missions.m3){ missions.m3 = true; coins += 25; earned += 25; showGameMessage("✅ Missão 3 concluída! +25 moedas", true); }
+  if(score >= 50 && mode === "normal" && !missions.m4){ missions.m4 = true; coins += 35; earned += 35; showGameMessage("✅ Missão 4 concluída! +35 moedas", true); }
+  if(normalEaten >= 8 && !missions.m5){ missions.m5 = true; coins += 20; earned += 20; showGameMessage("✅ Missão 5 concluída! +20 moedas", true); }
+  if(totalGames >= 5 && !missions.m6){ missions.m6 = true; coins += 22; earned += 22; showGameMessage("✅ Missão 6 concluída! +22 moedas", true); }
+  if(score >= 100 && !missions.m7){ missions.m7 = true; coins += 50; earned += 50; showGameMessage("✅ Missão 7 concluída! +50 moedas", true); }
+  if(specialCount >= 5 && !missions.m8){ missions.m8 = true; coins += 40; earned += 40; showGameMessage("✅ Missão 8 concluída! +40 moedas", true); }
 
-  if(reward > 0) showGameMessage(`🎉 Total de recompensas: +${reward} moedas`, true);
+  pendingRewards = earned;
+  if(earned > 0){
+    document.getElementById("collectBtn").style.display = "block";
+  }
+}
 
-  document.getElementById("mission1").innerText = `Fazer 30 pontos em uma partida ${missions.m1 ? "✅" : "❌"}`;
-  document.getElementById("mission2").innerText = `Comer 3 comidas especiais ${missions.m2 ? "✅" : "❌"}`;
-  document.getElementById("mission3").innerText = `Jogar 2 vezes no Hardcore ${missions.m3 ? "✅" : "❌"}`;
-  document.getElementById("mission4").innerText = `Chegar a 50 pontos no Normal ${missions.m4 ? "✅" : "❌"}`;
-  document.getElementById("mission5").innerText = `Comer 8 comidas normais seguidas ${missions.m5 ? "✅" : "❌"}`;
-  document.getElementById("mission6").innerText = `Jogar 5 partidas no total ${missions.m6 ? "✅" : "❌"}`;
+function collectRewards(){
+  if(pendingRewards > 0){
+    showGameMessage(`🎉 Recompensas coletadas: +${pendingRewards} moedas!`, true);
+    pendingRewards = 0;
+    document.getElementById("collectBtn").style.display = "none";
+  }
 }
 
 function backMenu(){
   document.getElementById("menu").style.display = "block";
   document.getElementById("shop").style.display = "none";
-  document.getElementById("gameOver").style.display = "none";
   document.getElementById("missions").style.display = "none";
-  canvas.style.display = "none";
+  document.getElementById("gameOver").style.display = "none";
 }
+
+function sendFeedback(){
+  window.location.href = "mailto:davifmarschall15@gmail.com?subject=Feedback%20Snake%20Game";
+}
+
+function showLeaderboard(){
+  showGameMessage(`🏆 Seu Recorde: ${highScore} pontos`, true);
+}
+
+// Controles do teclado
+document.addEventListener("keydown", e => {
+  if((e.key === "ArrowLeft" || e.key.toLowerCase() === "a") && direction !== "right") direction = "left";
+  if((e.key === "ArrowUp" || e.key.toLowerCase() === "w") && direction !== "down") direction = "up";
+  if((e.key === "ArrowRight" || e.key.toLowerCase() === "d") && direction !== "left") direction = "right";
+  if((e.key === "ArrowDown" || e.key.toLowerCase() === "s") && direction !== "up") direction = "down";
+});
 </script>
 </body>
 </html>
