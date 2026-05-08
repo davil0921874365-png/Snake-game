@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>🐍 Snake Game 1.0.4</title>
+<title>🐍 Snake Game 1.0.5</title>
 <style>
   body { 
     background:#111; 
@@ -69,20 +69,6 @@
     display: none;
   }
 
-  #contestAlert {
-    background: rgba(255, 140, 0, 0.95); 
-    color: #000; 
-    padding: 14px 28px;
-    border-radius: 12px; 
-    font-size: 18px; 
-    font-weight: bold; 
-    box-shadow: 0 0 20px #ff8c00;
-    text-align: center;
-    border: 2px solid #000;
-    margin-bottom: 20px;
-    display: none;
-  }
-
   #gameMessage {
     position: fixed;
     top: 50%;
@@ -101,61 +87,48 @@
     box-shadow: 0 0 25px #0f0;
   }
 
-  .floating-text {
-    position: absolute;
-    font-weight: bold;
-    font-size: 21px;
-    pointer-events: none;
-    animation: floatUp 1.4s ease-out forwards;
-    text-shadow: 0 0 10px black;
-    z-index: 100;
-  }
-
-  @keyframes floatUp {
-    0% { opacity: 1; transform: translateY(0); }
-    100% { opacity: 0; transform: translateY(-95px); }
-  }
-
-  /* ==================== IA ASSISTENTE ==================== */
+  /* ==================== PAINEL IA ==================== */
   .ai-panel {
     display: none;
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 440px;
-    height: 560px;
+    width: 480px;
+    height: 650px;
     background: #1a1a1a;
-    border: 3px solid #0f0;
-    border-radius: 18px;
-    box-shadow: 0 0 40px #0f0;
+    border: 4px solid #0f0;
+    border-radius: 20px;
+    box-shadow: 0 0 50px #0f0;
     overflow: hidden;
     z-index: 1000;
+    flex-direction: column;
   }
 
   .ai-header {
     background: #0f0;
     color: #111;
-    padding: 15px;
+    padding: 18px;
     text-align: center;
-    font-size: 21px;
+    font-size: 22px;
     font-weight: bold;
   }
 
   #aiMessages {
-    height: 420px;
+    flex: 1;
     overflow-y: auto;
-    padding: 15px;
+    padding: 18px;
     display: flex;
     flex-direction: column;
     gap: 12px;
+    background: #111;
   }
 
   .ai-msg {
-    padding: 12px 16px;
+    padding: 13px 16px;
     border-radius: 12px;
     max-width: 85%;
-    line-height: 1.4;
+    line-height: 1.45;
   }
 
   .ai-msg.user {
@@ -171,39 +144,41 @@
   }
 
   .ai-input-area {
-    padding: 12px;
+    padding: 15px;
     background: #111;
     border-top: 2px solid #0f0;
   }
 
   .ai-input-area input {
     width: 100%;
-    padding: 14px;
+    padding: 15px;
     border: none;
-    border-radius: 8px;
+    border-radius: 10px;
     font-size: 16px;
     background: #222;
     color: white;
+  }
+
+  .ai-footer {
+    padding: 20px;
+    background: #111;
+    border-top: 4px solid #0f0;
+    text-align: center;
   }
 </style>
 </head>
 <body>
 
 <div id="updateAlert">
-  🐍 Snake Game 1.0.4<br>
-  IA Assistente adicionada! aviso:so use as sujestoes que a IA te mandou!
-</div>
-
-<div id="contestAlert">
-  🔥 Desafio da Cobrinha Épico 🔥<br>
-  Faça a maior pontuação possível!
+  🐍 Snake Game 1.0.5<br>
+  Versão Completa com IA Assistente
 </div>
 
 <div id="gameMessage"></div>
 
 <div id="menu" class="menu">
   <h1>🐍 Snake Game</h1>
-  <p style="margin:10px 0 25px; font-size:19px; color:#0f0;">Versão <strong>1.0.4</strong></p>
+  <p style="margin:10px 0 25px; font-size:19px; color:#0f0;">Versão <strong>1.0.5</strong></p>
   
   <button onclick="startGame('normal')">▶️ Iniciar Jogo (Normal)</button>
   <button onclick="startGame('hardcore')">🔥 Iniciar Jogo (Hardcore)</button>
@@ -219,15 +194,20 @@
 
 <canvas id="game" width="440" height="440"></canvas>
 
-<!-- ==================== PAINEL DA IA ==================== -->
+<!-- PAINEL DA IA -->
 <div id="aiPanel" class="ai-panel">
   <div class="ai-header">💬 IA Assistente</div>
   <div id="aiMessages"></div>
+  
   <div class="ai-input-area">
     <input id="aiInput" type="text" placeholder="Digite sua pergunta aqui...">
   </div>
-  <div style="text-align:center; padding:10px; background:#111;">
-    <button onclick="closeAIAssistant()" style="width:auto; padding:10px 25px;">Fechar</button>
+  
+  <div class="ai-footer">
+    <button onclick="closeAIAssistant()" 
+            style="width:90%; padding:18px; font-size:20px; background:#ff3333; color:white; border:none; border-radius:12px; font-weight:bold;">
+      ❌ SAIR
+    </button>
   </div>
 </div>
 
@@ -258,16 +238,20 @@
 </div>
 
 <div id="missions" class="menu" style="display:none;">
-  <h2>📜 Missões do Dia</h2>
+  <h2>📜 Missões</h2>
   <ul style="text-align:left; line-height:2.1; font-size:17px;">
     <li id="mission1">Fazer 30 pontos em uma partida ❌</li>
-    <li id="mission2">Comer 3 comidas especiais ❌</li>
-    <li id="mission3">Jogar 2 vezes no Hardcore ❌</li>
-    <li id="mission4">Chegar a 50 pontos no Normal ❌</li>
-    <li id="mission5">Comer 8 comidas normais seguidas ❌</li>
-    <li id="mission6">Jogar 5 partidas no total ❌</li>
-    <li id="mission7">Fazer 100 pontos em uma partida ❌</li>
-    <li id="mission8">Comer 5 comidas especiais ❌</li>
+    <li id="mission2">Comer 4 comidas especiais ❌</li>
+    <li id="mission3">Jogar 3 vezes no Hardcore ❌</li>
+    <li id="mission4">Chegar a 60 pontos no Normal ❌</li>
+    <li id="mission5">Comer 12 comidas normais seguidas ❌</li>
+    <li id="mission6">Jogar 10 partidas no total ❌</li>
+    <li id="mission7">Fazer 120 pontos em uma partida ❌</li>
+    <li id="mission8">Comer 8 comidas especiais ❌</li>
+    <li id="mission9">Comprar 1 skin na loja ❌</li>
+    <li id="mission10">Fazer 90 pontos no Hardcore ❌</li>
+    <li id="mission11">Chegar a 200 pontos ❌</li>
+    <li id="mission12">Jogar 20 partidas no total ❌</li>
   </ul>
   <button onclick="backMenu()">⬅️ Voltar</button>
 </div>
@@ -281,16 +265,15 @@ let snake, direction, food, specialFood, score = 0, gameLoop, coins = 0;
 let currentSkin = "green", mode = "normal", speed = 110;
 let highScore = parseInt(localStorage.getItem("snakeHighScore")) || 0;
 let totalGames = parseInt(localStorage.getItem("snakeTotalGames")) || 0;
-let specialCount = 0, normalEaten = 0, hardcorePlays = 0;
+let specialCount = 0, normalEaten = 0, hardcorePlays = 0, skinsBought = 0;
 
-let missions = {m1:false, m2:false, m3:false, m4:false, m5:false, m6:false, m7:false, m8:false};
-let skinsOwned = new Set(["green"]);
+let missions = {m1:false, m2:false, m3:false, m4:false, m5:false, m6:false, m7:false, m8:false, m9:false, m10:false, m11:false, m12:false};
 let pendingRewards = 0;
 
-// ====================== FUNÇÕES DA IA ASSISTENTE ======================
+// ====================== IA ASSISTENTE ======================
 function openAIAssistant() {
   document.getElementById("menu").style.display = "none";
-  document.getElementById("aiPanel").style.display = "block";
+  document.getElementById("aiPanel").style.display = "flex";
   document.getElementById("aiMessages").innerHTML = '';
   
   addAIMessage(`Olá! Eu sou a <strong>IA Assistente</strong> 🐍<br><br>
@@ -320,34 +303,29 @@ function getAIResponse(question) {
   const q = question.toLowerCase().trim();
 
   if (q.includes("como jogar") || q.includes("controles") || q.includes("teclas") || q.includes("mover")) 
-    return "Use as **setas** ou **W A S D** para controlar a cobra.";
-  
+    return "Use as **setas do teclado** ou as teclas **W A S D** para mover a cobra.";
+
   if (q.includes("hardcore")) 
-    return "No Hardcore a velocidade aumenta toda vez que você come. É bem mais difícil!";
-  
+    return "No modo Hardcore a velocidade aumenta toda vez que você come. É muito mais difícil!";
+
   if (q.includes("comida especial") || q.includes("dourada") || q.includes("amarela")) 
-    return "A comida dourada dá **+3 pontos** e **+3 moedas**. Ela aparece aleatoriamente.";
-  
+    return "A comida dourada vale +3 pontos e +3 moedas. Ela aparece aleatoriamente após comer uma normal.";
+
   if (q.includes("missão") || q.includes("missões")) 
-    return "As missões te dão moedas extras. Abra o menu de Missões para ver todas.";
-  
+    return "As missões dão moedas extras. Abra o menu de Missões para ver o progresso.";
+
   if (q.includes("skin") || q.includes("loja") || q.includes("comprar")) 
-    return "Você ganha moedas jogando. Use na Loja de Skins para mudar a aparência da cobra.";
-  
-  if (q.includes("recorde") || q.includes("high score")) 
-    return `Seu recorde atual é <strong>${highScore}</strong> pontos.`;
-  
-  if (q.includes("dica") || q.includes("ajuda") || q.includes("conselho")) 
-    return "Dica: Tente sempre deixar espaço para virar. Evite os cantos quando a cobra estiver grande!";
+    return "Você ganha moedas jogando e completando missões. Depois pode comprar skins na loja.";
+
+  if (q.includes("dica") || q.includes("estrategia") || q.includes("conselho")) 
+    return "Dica importante: Sempre planeje com antecedência e evite ficar preso nos cantos da tela.";
 
   const respostas = [
     "Ótima pergunta! O que mais você quer saber sobre o jogo?",
-    "Estou aqui pra te ajudar a ficar melhor na cobrinha 🐍",
-    "Quer alguma dica específica de estratégia?",
-    "Pode perguntar qualquer coisa!",
-    "Quer que eu explique melhor alguma mecânica?"
+    "Estou aqui para te ajudar a melhorar na cobrinha 🐍",
+    "Quer alguma estratégia específica para bater recordes?",
+    "Pode perguntar qualquer coisa!"
   ];
-  
   return respostas[Math.floor(Math.random() * respostas.length)];
 }
 
@@ -356,13 +334,10 @@ window.onload = function(){
   document.getElementById("updateAlert").style.display = "block";
   setTimeout(() => document.getElementById("updateAlert").style.display = "none", 6000);
 
-  document.getElementById("contestAlert").style.display = "block";
-  setTimeout(() => document.getElementById("contestAlert").style.display = "none", 9000);
-
   document.getElementById("highScoreDisplay").innerHTML = `Recorde atual: <strong>${highScore}</strong> pontos`;
 };
 
-// ====================== JOGO ======================
+// ====================== FUNÇÕES DO JOGO ======================
 function startGame(selectedMode){
   mode = selectedMode;
   if(mode === "hardcore") hardcorePlays++;
@@ -399,6 +374,7 @@ function randomFood(){
 function draw(){
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+  // Desenho da cobra
   for(let i = 0; i < snake.length; i++){
     if(currentSkin === "green") ctx.fillStyle = i === 0 ? "#00ff44" : "#00cc22";
     else if(currentSkin === "blue") ctx.fillStyle = i === 0 ? "#00ddff" : "#0099cc";
@@ -413,9 +389,11 @@ function draw(){
 
     ctx.fillRect(snake[i].x, snake[i].y, box, box);
 
+    // Olhos da cabeça
     if(i === 0){
       ctx.fillStyle = "white";
       const eyeSize = 5, offset = 6;
+
       if(direction === "right"){
         ctx.fillRect(snake[i].x + 14, snake[i].y + offset, eyeSize, eyeSize);
         ctx.fillRect(snake[i].x + 14, snake[i].y + box - offset - eyeSize, eyeSize, eyeSize);
@@ -447,9 +425,11 @@ function draw(){
     }
   }
 
+  // Comida normal
   ctx.fillStyle = "#ff2222";
   ctx.fillRect(food.x, food.y, box, box);
 
+  // Comida especial
   if(specialFood){
     ctx.fillStyle = "#ffd700";
     ctx.fillRect(specialFood.x, specialFood.y, box, box);
@@ -529,11 +509,11 @@ function buySkin(skin, cost){
   if(coins >= cost){
     coins -= cost;
     currentSkin = skin;
-    skinsOwned.add(skin);
-    showGameMessage(`✅ Skin ${skin.toUpperCase()} equipada!`, true);
+    skinsBought++;
+    showGameMessage(`✅ Skin ${skin.toUpperCase()} equipada com sucesso!`, true);
     backMenu();
   } else {
-    showGameMessage(`❌ Moedas insuficientes!`, false);
+    showGameMessage(`❌ Você não tem moedas suficientes!`, false);
   }
 }
 
@@ -547,17 +527,23 @@ function openMissions(){
 function checkMissions(){
   let earned = 0;
 
-  if(score >= 30 && !missions.m1){ missions.m1 = true; coins += 15; earned += 15; showGameMessage("✅ Missão 1 concluída! +15", true); }
-  if(specialCount >= 3 && !missions.m2){ missions.m2 = true; coins += 30; earned += 30; showGameMessage("✅ Missão 2 concluída! +30", true); }
-  if(hardcorePlays >= 2 && !missions.m3){ missions.m3 = true; coins += 25; earned += 25; showGameMessage("✅ Missão 3 concluída! +25", true); }
-  if(score >= 50 && mode === "normal" && !missions.m4){ missions.m4 = true; coins += 35; earned += 35; showGameMessage("✅ Missão 4 concluída! +35", true); }
-  if(normalEaten >= 8 && !missions.m5){ missions.m5 = true; coins += 20; earned += 20; showGameMessage("✅ Missão 5 concluída! +20", true); }
-  if(totalGames >= 5 && !missions.m6){ missions.m6 = true; coins += 22; earned += 22; showGameMessage("✅ Missão 6 concluída! +22", true); }
-  if(score >= 100 && !missions.m7){ missions.m7 = true; coins += 50; earned += 50; showGameMessage("✅ Missão 7 concluída! +50", true); }
-  if(specialCount >= 5 && !missions.m8){ missions.m8 = true; coins += 40; earned += 40; showGameMessage("✅ Missão 8 concluída! +40", true); }
+  if(score >= 30 && !missions.m1){ missions.m1 = true; coins += 15; earned += 15; }
+  if(specialCount >= 4 && !missions.m2){ missions.m2 = true; coins += 30; earned += 30; }
+  if(hardcorePlays >= 3 && !missions.m3){ missions.m3 = true; coins += 35; earned += 35; }
+  if(score >= 60 && mode === "normal" && !missions.m4){ missions.m4 = true; coins += 40; earned += 40; }
+  if(normalEaten >= 12 && !missions.m5){ missions.m5 = true; coins += 25; earned += 25; }
+  if(totalGames >= 10 && !missions.m6){ missions.m6 = true; coins += 30; earned += 30; }
+  if(score >= 120 && !missions.m7){ missions.m7 = true; coins += 60; earned += 60; }
+  if(specialCount >= 8 && !missions.m8){ missions.m8 = true; coins += 50; earned += 50; }
+  if(skinsBought >= 1 && !missions.m9){ missions.m9 = true; coins += 20; earned += 20; }
+  if(score >= 90 && mode === "hardcore" && !missions.m10){ missions.m10 = true; coins += 55; earned += 55; }
+  if(score >= 200 && !missions.m11){ missions.m11 = true; coins += 80; earned += 80; }
+  if(totalGames >= 20 && !missions.m12){ missions.m12 = true; coins += 45; earned += 45; }
 
-  pendingRewards = earned;
-  if(earned > 0) document.getElementById("collectBtn").style.display = "block";
+  if(earned > 0){
+    pendingRewards = earned;
+    document.getElementById("collectBtn").style.display = "block";
+  }
 }
 
 function collectRewards(){
@@ -581,7 +567,7 @@ function sendFeedback(){
 }
 
 function showLeaderboard(){
-  showGameMessage(`🏆 Recorde atual: ${highScore} pontos`, true);
+  showGameMessage(`🏆 Seu Recorde Atual: ${highScore} pontos`, true);
 }
 
 function showGameMessage(text, isSuccess = true) {
