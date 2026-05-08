@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>🐍 Snake Game 1.0.3</title>
+<title>🐍 Snake Game 1.0.4</title>
 <style>
   body { 
     background:#111; 
@@ -115,13 +115,83 @@
     0% { opacity: 1; transform: translateY(0); }
     100% { opacity: 0; transform: translateY(-95px); }
   }
+
+  /* ==================== IA ASSISTENTE ==================== */
+  .ai-panel {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 440px;
+    height: 560px;
+    background: #1a1a1a;
+    border: 3px solid #0f0;
+    border-radius: 18px;
+    box-shadow: 0 0 40px #0f0;
+    overflow: hidden;
+    z-index: 1000;
+  }
+
+  .ai-header {
+    background: #0f0;
+    color: #111;
+    padding: 15px;
+    text-align: center;
+    font-size: 21px;
+    font-weight: bold;
+  }
+
+  #aiMessages {
+    height: 420px;
+    overflow-y: auto;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .ai-msg {
+    padding: 12px 16px;
+    border-radius: 12px;
+    max-width: 85%;
+    line-height: 1.4;
+  }
+
+  .ai-msg.user {
+    align-self: flex-end;
+    background: #003300;
+    border: 1px solid #00ff44;
+  }
+
+  .ai-msg.ai {
+    align-self: flex-start;
+    background: #0a0a0a;
+    border: 1px solid #0f0;
+  }
+
+  .ai-input-area {
+    padding: 12px;
+    background: #111;
+    border-top: 2px solid #0f0;
+  }
+
+  .ai-input-area input {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    background: #222;
+    color: white;
+  }
 </style>
 </head>
 <body>
 
 <div id="updateAlert">
-  🐍 Snake Game 1.0.3<br>
-  Bugs Corrigidos,Olhos na cobra + Efeitos visuais!
+  🐍 Snake Game 1.0.4<br>
+  IA Assistente adicionada! aviso:so use as sujestoes que a IA te mandou!
 </div>
 
 <div id="contestAlert">
@@ -133,21 +203,33 @@
 
 <div id="menu" class="menu">
   <h1>🐍 Snake Game</h1>
-  <p style="margin:10px 0 25px; font-size:19px; color:#0f0;">Versão <strong>1.0.3</strong></p>
+  <p style="margin:10px 0 25px; font-size:19px; color:#0f0;">Versão <strong>1.0.4</strong></p>
   
   <button onclick="startGame('normal')">▶️ Iniciar Jogo (Normal)</button>
   <button onclick="startGame('hardcore')">🔥 Iniciar Jogo (Hardcore)</button>
   <button onclick="openShop()">🛒 Loja de Skins</button>
   <button onclick="openMissions()">📜 Missões</button>
+  <button onclick="openAIAssistant()">💬 IA Assistente</button>
   <button onclick="collectRewards()" id="collectBtn" style="background:#ffaa00; display:none;">🎁 Coletar Recompensas</button>
   <button onclick="showLeaderboard()">🏆 Ranking Local</button>
   <button onclick="sendFeedback()">✉️ Enviar Feedback</button>
   
   <p id="highScoreDisplay" style="margin-top:20px; font-size:17px;"></p>
-  <p id="controlsInfo" style="margin-top:15px; font-size:15px; opacity:0.8;"></p>
 </div>
 
 <canvas id="game" width="440" height="440"></canvas>
+
+<!-- ==================== PAINEL DA IA ==================== -->
+<div id="aiPanel" class="ai-panel">
+  <div class="ai-header">💬 IA Assistente</div>
+  <div id="aiMessages"></div>
+  <div class="ai-input-area">
+    <input id="aiInput" type="text" placeholder="Digite sua pergunta aqui...">
+  </div>
+  <div style="text-align:center; padding:10px; background:#111;">
+    <button onclick="closeAIAssistant()" style="width:auto; padding:10px 25px;">Fechar</button>
+  </div>
+</div>
 
 <div id="gameOver" class="menu" style="display:none;">
   <h2>💀 Game Over!</h2>
@@ -205,25 +287,68 @@ let missions = {m1:false, m2:false, m3:false, m4:false, m5:false, m6:false, m7:f
 let skinsOwned = new Set(["green"]);
 let pendingRewards = 0;
 
-// ====================== MENSAGEM BONITA ======================
-function showGameMessage(text, isSuccess = true) {
-  const msg = document.getElementById("gameMessage");
-  msg.innerText = text;
-  msg.style.background = isSuccess ? "rgba(0, 255, 0, 0.92)" : "rgba(255, 80, 80, 0.92)";
-  msg.style.display = "block";
-  setTimeout(() => msg.style.display = "none", 2400);
+// ====================== FUNÇÕES DA IA ASSISTENTE ======================
+function openAIAssistant() {
+  document.getElementById("menu").style.display = "none";
+  document.getElementById("aiPanel").style.display = "block";
+  document.getElementById("aiMessages").innerHTML = '';
+  
+  addAIMessage(`Olá! Eu sou a <strong>IA Assistente</strong> 🐍<br><br>
+  Pode me perguntar qualquer coisa sobre o jogo:<br>
+  • Como jogar<br>
+  • Dicas e estratégias<br>
+  • Missões e recompensas<br>
+  • Skins e moedas<br>
+  • Modo Hardcore`, true);
 }
 
-// ====================== TEXTO FLUTUANTE ======================
-function createFloatingText(x, y, text, color = "#ffff00") {
-  const el = document.createElement("div");
-  el.className = "floating-text";
-  el.style.left = (canvas.offsetLeft + x + 5) + "px";
-  el.style.top = (canvas.offsetTop + y - 10) + "px";
-  el.style.color = color;
-  el.textContent = text;
-  document.body.appendChild(el);
-  setTimeout(() => el.remove(), 1300);
+function closeAIAssistant() {
+  document.getElementById("aiPanel").style.display = "none";
+  document.getElementById("menu").style.display = "block";
+}
+
+function addAIMessage(text, isAI = true) {
+  const container = document.getElementById("aiMessages");
+  const msg = document.createElement("div");
+  msg.className = `ai-msg ${isAI ? 'ai' : 'user'}`;
+  msg.innerHTML = text;
+  container.appendChild(msg);
+  container.scrollTop = container.scrollHeight;
+}
+
+function getAIResponse(question) {
+  const q = question.toLowerCase().trim();
+
+  if (q.includes("como jogar") || q.includes("controles") || q.includes("teclas") || q.includes("mover")) 
+    return "Use as **setas** ou **W A S D** para controlar a cobra.";
+  
+  if (q.includes("hardcore")) 
+    return "No Hardcore a velocidade aumenta toda vez que você come. É bem mais difícil!";
+  
+  if (q.includes("comida especial") || q.includes("dourada") || q.includes("amarela")) 
+    return "A comida dourada dá **+3 pontos** e **+3 moedas**. Ela aparece aleatoriamente.";
+  
+  if (q.includes("missão") || q.includes("missões")) 
+    return "As missões te dão moedas extras. Abra o menu de Missões para ver todas.";
+  
+  if (q.includes("skin") || q.includes("loja") || q.includes("comprar")) 
+    return "Você ganha moedas jogando. Use na Loja de Skins para mudar a aparência da cobra.";
+  
+  if (q.includes("recorde") || q.includes("high score")) 
+    return `Seu recorde atual é <strong>${highScore}</strong> pontos.`;
+  
+  if (q.includes("dica") || q.includes("ajuda") || q.includes("conselho")) 
+    return "Dica: Tente sempre deixar espaço para virar. Evite os cantos quando a cobra estiver grande!";
+
+  const respostas = [
+    "Ótima pergunta! O que mais você quer saber sobre o jogo?",
+    "Estou aqui pra te ajudar a ficar melhor na cobrinha 🐍",
+    "Quer alguma dica específica de estratégia?",
+    "Pode perguntar qualquer coisa!",
+    "Quer que eu explique melhor alguma mecânica?"
+  ];
+  
+  return respostas[Math.floor(Math.random() * respostas.length)];
 }
 
 // ====================== INICIALIZAÇÃO ======================
@@ -248,6 +373,7 @@ function startGame(selectedMode){
   document.getElementById("gameOver").style.display = "none";
   document.getElementById("shop").style.display = "none";
   document.getElementById("missions").style.display = "none";
+  document.getElementById("aiPanel").style.display = "none";
   canvas.style.display = "block";
 
   snake = [{x: 10*box, y: 10*box}];
@@ -273,9 +399,7 @@ function randomFood(){
 function draw(){
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Desenhar cobra com olhos
   for(let i = 0; i < snake.length; i++){
-    // Cor da pele conforme skin equipada
     if(currentSkin === "green") ctx.fillStyle = i === 0 ? "#00ff44" : "#00cc22";
     else if(currentSkin === "blue") ctx.fillStyle = i === 0 ? "#00ddff" : "#0099cc";
     else if(currentSkin === "rainbow") ctx.fillStyle = ["#ff0000","#ff8800","#ffff00","#00ff00","#00aaff","#aa00ff"][i%6];
@@ -289,11 +413,9 @@ function draw(){
 
     ctx.fillRect(snake[i].x, snake[i].y, box, box);
 
-    // Olhos na cabeça
     if(i === 0){
       ctx.fillStyle = "white";
       const eyeSize = 5, offset = 6;
-
       if(direction === "right"){
         ctx.fillRect(snake[i].x + 14, snake[i].y + offset, eyeSize, eyeSize);
         ctx.fillRect(snake[i].x + 14, snake[i].y + box - offset - eyeSize, eyeSize, eyeSize);
@@ -325,11 +447,9 @@ function draw(){
     }
   }
 
-  // Comida normal
   ctx.fillStyle = "#ff2222";
   ctx.fillRect(food.x, food.y, box, box);
 
-  // Comida especial
   if(specialFood){
     ctx.fillStyle = "#ffd700";
     ctx.fillRect(specialFood.x, specialFood.y, box, box);
@@ -347,10 +467,6 @@ function draw(){
     score++;
     coins++;
     normalEaten++;
-
-    createFloatingText(food.x, food.y, "+1", "#ffffff");
-    createFloatingText(food.x + 12, food.y + 18, "💰", "#ffdd00");
-
     food = randomFood();
     if(Math.random() < 0.35) specialFood = randomFood();
 
@@ -364,10 +480,6 @@ function draw(){
     score += 3;
     coins += 3;
     specialCount++;
-
-    createFloatingText(specialFood.x, specialFood.y, "+3", "#ffd700");
-    createFloatingText(specialFood.x + 10, specialFood.y + 20, "💰💰💰", "#ffdd00");
-
     specialFood = null;
   }
   else {
@@ -416,9 +528,9 @@ function openShop(){
 function buySkin(skin, cost){
   if(coins >= cost){
     coins -= cost;
-    currentSkin = skin;           // ← Aqui estava o bug! Agora está corrigido
+    currentSkin = skin;
     skinsOwned.add(skin);
-    showGameMessage(`✅ Skin ${skin.toUpperCase()} equipada com sucesso!`, true);
+    showGameMessage(`✅ Skin ${skin.toUpperCase()} equipada!`, true);
     backMenu();
   } else {
     showGameMessage(`❌ Moedas insuficientes!`, false);
@@ -435,24 +547,22 @@ function openMissions(){
 function checkMissions(){
   let earned = 0;
 
-  if(score >= 30 && !missions.m1){ missions.m1 = true; coins += 15; earned += 15; showGameMessage("✅ Missão 1 concluída! +15 moedas", true); }
-  if(specialCount >= 3 && !missions.m2){ missions.m2 = true; coins += 30; earned += 30; showGameMessage("✅ Missão 2 concluída! +30 moedas", true); }
-  if(hardcorePlays >= 2 && !missions.m3){ missions.m3 = true; coins += 25; earned += 25; showGameMessage("✅ Missão 3 concluída! +25 moedas", true); }
-  if(score >= 50 && mode === "normal" && !missions.m4){ missions.m4 = true; coins += 35; earned += 35; showGameMessage("✅ Missão 4 concluída! +35 moedas", true); }
-  if(normalEaten >= 8 && !missions.m5){ missions.m5 = true; coins += 20; earned += 20; showGameMessage("✅ Missão 5 concluída! +20 moedas", true); }
-  if(totalGames >= 5 && !missions.m6){ missions.m6 = true; coins += 22; earned += 22; showGameMessage("✅ Missão 6 concluída! +22 moedas", true); }
-  if(score >= 100 && !missions.m7){ missions.m7 = true; coins += 50; earned += 50; showGameMessage("✅ Missão 7 concluída! +50 moedas", true); }
-  if(specialCount >= 5 && !missions.m8){ missions.m8 = true; coins += 40; earned += 40; showGameMessage("✅ Missão 8 concluída! +40 moedas", true); }
+  if(score >= 30 && !missions.m1){ missions.m1 = true; coins += 15; earned += 15; showGameMessage("✅ Missão 1 concluída! +15", true); }
+  if(specialCount >= 3 && !missions.m2){ missions.m2 = true; coins += 30; earned += 30; showGameMessage("✅ Missão 2 concluída! +30", true); }
+  if(hardcorePlays >= 2 && !missions.m3){ missions.m3 = true; coins += 25; earned += 25; showGameMessage("✅ Missão 3 concluída! +25", true); }
+  if(score >= 50 && mode === "normal" && !missions.m4){ missions.m4 = true; coins += 35; earned += 35; showGameMessage("✅ Missão 4 concluída! +35", true); }
+  if(normalEaten >= 8 && !missions.m5){ missions.m5 = true; coins += 20; earned += 20; showGameMessage("✅ Missão 5 concluída! +20", true); }
+  if(totalGames >= 5 && !missions.m6){ missions.m6 = true; coins += 22; earned += 22; showGameMessage("✅ Missão 6 concluída! +22", true); }
+  if(score >= 100 && !missions.m7){ missions.m7 = true; coins += 50; earned += 50; showGameMessage("✅ Missão 7 concluída! +50", true); }
+  if(specialCount >= 5 && !missions.m8){ missions.m8 = true; coins += 40; earned += 40; showGameMessage("✅ Missão 8 concluída! +40", true); }
 
   pendingRewards = earned;
-  if(earned > 0){
-    document.getElementById("collectBtn").style.display = "block";
-  }
+  if(earned > 0) document.getElementById("collectBtn").style.display = "block";
 }
 
 function collectRewards(){
   if(pendingRewards > 0){
-    showGameMessage(`🎉 Recompensas coletadas: +${pendingRewards} moedas!`, true);
+    showGameMessage(`🎉 +${pendingRewards} moedas coletadas!`, true);
     pendingRewards = 0;
     document.getElementById("collectBtn").style.display = "none";
   }
@@ -463,6 +573,7 @@ function backMenu(){
   document.getElementById("shop").style.display = "none";
   document.getElementById("missions").style.display = "none";
   document.getElementById("gameOver").style.display = "none";
+  document.getElementById("aiPanel").style.display = "none";
 }
 
 function sendFeedback(){
@@ -470,15 +581,38 @@ function sendFeedback(){
 }
 
 function showLeaderboard(){
-  showGameMessage(`🏆 Seu Recorde: ${highScore} pontos`, true);
+  showGameMessage(`🏆 Recorde atual: ${highScore} pontos`, true);
 }
 
-// Controles do teclado
+function showGameMessage(text, isSuccess = true) {
+  const msg = document.getElementById("gameMessage");
+  msg.innerText = text;
+  msg.style.background = isSuccess ? "rgba(0, 255, 0, 0.92)" : "rgba(255, 80, 80, 0.92)";
+  msg.style.display = "block";
+  setTimeout(() => msg.style.display = "none", 2400);
+}
+
+// ====================== CONTROLES ======================
 document.addEventListener("keydown", e => {
   if((e.key === "ArrowLeft" || e.key.toLowerCase() === "a") && direction !== "right") direction = "left";
   if((e.key === "ArrowUp" || e.key.toLowerCase() === "w") && direction !== "down") direction = "up";
   if((e.key === "ArrowRight" || e.key.toLowerCase() === "d") && direction !== "left") direction = "right";
   if((e.key === "ArrowDown" || e.key.toLowerCase() === "s") && direction !== "up") direction = "down";
+});
+
+// ====================== INPUT DA IA ======================
+document.getElementById("aiInput").addEventListener("keypress", function(e) {
+  if (e.key === "Enter" && this.value.trim() !== "") {
+    const pergunta = this.value.trim();
+    addAIMessage(pergunta, false);
+    
+    setTimeout(() => {
+      const resposta = getAIResponse(pergunta);
+      addAIMessage(resposta, true);
+    }, 650);
+
+    this.value = "";
+  }
 });
 </script>
 </body>
